@@ -27,12 +27,12 @@ function SetAsConsumed(twoD,x,y,dx,dy) {
 function main() {
     
     var segments=[]; 
-    var template="##===##########===###\n"+
+    var template="###############===###\n"+
                  "#...................#\n"+
                  "=...................=\n"+
-                 "=.......     .......=\n"+
-                 "=.......     .......=\n"+
-                 "=.......     .......=\n"+
+                 "=.......OOOOO.......=\n"+
+                 "=.......OOOOO.......=\n"+
+                 "#.......OOOOO.......=\n"+
                  "=...................=\n"+
                  "=...................=\n"+
                  "=...................=\n"+
@@ -54,6 +54,12 @@ function main() {
 			cube(1).translate([0,0,9])
 		]); 
 	};
+	translate['O'] = function() { 
+	    return union([ 
+			cube(1),
+			cylinder({r:0.5,h:10}).translate([0.5,0.5,0])
+		]);
+	}
 
 	var twoD = [];
 	twoD[0] = []; 
