@@ -7,7 +7,6 @@
 
 function main() {
     
-    var w = cube({size:[1,1,1]});
     var segments=[]; 
     var template="##===##########===###\n"+
                  "#...................#\n"+
@@ -20,32 +19,38 @@ function main() {
                  "#...................#\n"+
                  "#...................#\n"+
                  "##===##!!!!!!##===###\n";
+				 
+    var translate = new Object(); 
+	translate['#'] = function() { return cube(1).scale([1,1,10]); }; 
+	translate['.'] = function() { return cube(1); }; 
+	translate['!'] = function() 
+	{ 
+		return union([
+			cube(1), 
+			cube(1).translate([0,0,9])
+		]); 
+	}; 
+	translate['='] = function() 
+	{ 
+		return union([
+			cube({size: [1,1,5]}), 
+			cube(1).translate([0,0,9])
+		]); 
+	};
+				 
     var x=0; 
     var y=0; 
     for(var i=0, len=template.length; i<len; i++) {
         x++; 
         var ch = template[i];
-        var s; 
         if (ch == '\n' || ch=='\r') { 
             x = 0; 
             y++; 
-        }
-        if (ch == '#') { 
-            s = w.scale([1,1,10]).translate([x,y,0]);
-        } else if (ch == '.') { 
-            s = w.translate([x,y,0]);
-        } else if (ch == '!') { 
-			s = union([ 
-				w.translate([x,y,0]),
-				w.translate([x,y,9])
-				]);
-		} else if (ch=='=') { 
-			s = union([
-				w.scale([1,1,5]).translate([x,y,0]),
-				w.translate([x,y,9])
-			]);
+		} else if (ch in translate) { 
+			var s = translate[ch] (); 
+			s = s.translate([x,y,0]); 
+			segments.push(s);
 		}
-        segments.push(s);
     }
     return union(segments);     
 
