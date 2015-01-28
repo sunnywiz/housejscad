@@ -11,7 +11,7 @@ function main() {
    for(var x=0; x<100; x++) { 
        segments.push(w.translate([x,0,0]));
    }
-   for(var y=0; y<100; x++) { 
+   for(var y=1; y<100; y++) { 
        segments.push(w.translate([0,y,0]));
    }
    return union(segments);
