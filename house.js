@@ -9,16 +9,23 @@ function main() {
     
     var w = cube({size:[1,1,1]});
     var segments=[]; 
-    var template="######\
-#....#\
-#####";
-    for(var i=0, len=template.length; i<len; i++) { 
+    var template="######\n"+
+                 "#....#\n"+
+                 "######";
+    var x=0; 
+    var y=0; 
+    for(var i=0, len=template.length; i<len; i++) {
+        x++; 
         var ch = template[i];
         var s; 
+        if (ch == '\n' || ch=='\r') { 
+            x = 0; 
+            y++; 
+        }
         if (ch == '#') { 
-            s = w.scale([1,1,10]).translate([i,0,0]);
+            s = w.scale([1,1,10]).translate([x,y,0]);
         } else if (ch == '.') { 
-            s = w.translate([i,0,0]);
+            s = w.translate([x,y,0]);
         }
         segments.push(s);
     }
