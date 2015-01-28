@@ -58,6 +58,9 @@ function main() {
 		}
 	}
 
+	// TODO: idea is to look for "groups" of things, like >, so can replace the whole thing with 
+	// a set of steps.   Only when we get steps, though. 
+	
 	for (y=0; y<yMax+10; y++) { 
 		if (typeof (twoD[y]) == 'undefined') continue; 
     	for (x = 0; x < xMax+10; x++) { 
@@ -71,4 +74,9 @@ function main() {
 	} 
     return segments;     
 
+	// TODO: change everything to use scale of 1,1,1; then multiply the whole thing by a scale factor 
+	// at the end of the routine. 
+	
+	// 
+	
 }
