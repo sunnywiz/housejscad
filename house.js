@@ -6,15 +6,13 @@
 // tags: Logo,Intersection,Sphere,Cube
 
 function main() {
-    var w = cube({size:[1,1,5]});
-   var segments = [
-       w.translate([0,0,0]), 
-       w.translate([0,1,0]),
-       w.translate([0,2,0]), 
-       w.translate([0,3,0]),
-       w.translate([1,0,0]), 
-       w.translate([2,0,0]),
-       w.translate([3,0,0]) 
-   ];
+   var w = cube({size:[1,1,5]});
+   var segments=[]; 
+   for(var x=0; x<100; x++) { 
+       segments.push(w.translate([x,0,0]));
+   }
+   for(var y=0; y<100; x++) { 
+       segments.push(w.translate([0,y,0]));
+   }
    return union(segments);
 }
