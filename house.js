@@ -9,9 +9,17 @@ function main() {
     
     var w = cube({size:[1,1,1]});
     var segments=[]; 
-    var template="######\n"+
-                 "#....#\n"+
-                 "######";
+    var template="##===##########===###\n"+
+                 "#...................#\n"+
+                 "=...................#\n"+
+                 "=...................#\n"+
+                 "=...................#\n"+
+                 "#...................#\n"+
+                 "#...................#\n"+
+                 "#...................#\n"+
+                 "#...................#\n"+
+                 "#...................#\n"+
+                 "##===##!!!!!!##===###\n";
     var x=0; 
     var y=0; 
     for(var i=0, len=template.length; i<len; i++) {
@@ -26,7 +34,17 @@ function main() {
             s = w.scale([1,1,10]).translate([x,y,0]);
         } else if (ch == '.') { 
             s = w.translate([x,y,0]);
-        }
+        } else if (ch == '!') { 
+			s = union([ 
+				w.translate([x,y,0]),
+				w.translate([x,y,9])
+				]);
+		} else if (ch=='=') { 
+			s = union([
+				w.scale([1,1,5]).translate([x,y,0]),
+				w.translate([x,y,9])
+			]);
+		}
         segments.push(s);
     }
     return union(segments);     
