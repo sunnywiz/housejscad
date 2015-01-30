@@ -7,13 +7,13 @@ GeekyGulati.TwoD = function() {
 	// various operations for getting, setting, and finding. 
 
 	var _store = []; 
-	var _xmax, _ymax = 0; 
+	var _xmax=0, _ymax = 0; 
 	var _that = this; 
 	
 	this.Set = function(x,y,v) { 
 		if (y>_ymax) _ymax = y;
 		if (typeof(_store[y])=='undefined') _store[y]=[]; 
-		if (x>_xmax) _xmax =x; 
+		if (x>_xmax) _xmax = x; 
 		_store[y][x] = v;
 		return _that; 
 	};
@@ -27,7 +27,7 @@ GeekyGulati.TwoD = function() {
 		for (var y2 = y; y2<y+dy; y2++) { 
 			if (typeof(_store[y2]) == 'undefined') return false; 
 			for (var x2 = x; x2<x+dx; x2++) { 
-			   if (_store[y2][x2] != ch) return false; 
+			   if (_store[y2][x2] != v) return false; 
 			}
 		}
 		return true;
@@ -42,7 +42,7 @@ GeekyGulati.TwoD = function() {
 			   _store[y2][x2]=v; 
 			}
 		}
-		return that; 
+		return _that; 
 	}
 
 	this.GetXMax = function() { return _xmax; } 
@@ -52,12 +52,14 @@ GeekyGulati.TwoD = function() {
 		// Returns {X:x,Y:y} of location found or 0
 		for (var y = 0; y <= _ymax; y++) { 
 			if (typeof(_store[y]) == 'undefined') continue; 
-			for (var x = 0; x< _xmax; x++) { 
+			for (var x = 0; x<= _xmax; x++) { 
 			    if (_store[y][x] == v) { 
+				    echo("found "+v+" at "+x+" "+y); 
 					return { X:x, Y:y }; 
 			   }
 			}
 		}
+		echo (v+" not found");
 		return 0;
 	}
 }
@@ -161,8 +163,8 @@ function main() {
 		   twoD.Set(x,y,ch); 
 		}
 	}
-	var xMax = twoD.GetXMax();  echo(xMax); 
-	var yMax = twoD.GetYMax();  echo(yMax); 
+	var xMax = twoD.GetXMax();
+	var yMax = twoD.GetYMax(); 
 
 	// ordered by x times y -- most thingies grabbed. 
 	var tryBuckets = [ [6,6],        //36
@@ -220,7 +222,7 @@ function main() {
 	var cut = twoD.FindSingle('V'); 
 	if (cut) { 
 		var block1 = cube(1).scale([cut.X,yMax,10]); 
-		var block2 = cube(1).scale([xMax,yMax,10]).translate([cut,0,0]); 
+		var block2 = cube(1).scale([xMax,yMax,10]).translate([cut.X,0,0]); 
 		var newsegments = []; 
 		for (var i=0; i<segments.length; i++) { 
 			var part1 = segments[i].intersect(block1); 
@@ -234,7 +236,7 @@ function main() {
 	cut = twoD.FindSingle('H'); 
 	if (cut) { 
 		var block1 = cube(1).scale([xMax,cut.Y,10]); 
-		var block2 = cube(1).scale([xMax,yMax,10]).translate([0,cut,0]); 
+		var block2 = cube(1).scale([xMax,yMax,10]).translate([0,cut.Y,0]); 
 		var newsegments = []; 
 		for (var i=0; i<segments.length; i++) { 
 			var part1 = segments[i].intersect(block1); 
