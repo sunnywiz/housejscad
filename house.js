@@ -53,10 +53,10 @@ function main() {
 "#................#.......................#.................d............................#\n"+
 "#................#########################.................d............................#\n"+
 "#........................................d.................d............................#\n"+
-"#........................................d.................d............................# H\n"+
 "#........................................d.................d............................#\n"+
 "#........................................d.................d............................#\n"+
-"#........................................d.................##############################\n"+
+"#........................................d.................d............................#\n"+
+"#........................................d.................############################## H\n"+
 "#........................................d.................#............................#\n"+
 "#........................................d.................#............................#\n"+
 "#........................................d.................#............................#\n"+
@@ -183,6 +183,9 @@ function main() {
     var floor = union(segments); 
 	segments = [ floor ]; 
 	
+	// TODO: FOR THE LOVE OF GOD MAKE THESE FUNCTIONS and possibly even better 
+	// some object oriented goodness. 
+	
 	// Now try to cut it along the "V" 
 	var cut = -1; 
 	for (y=0; cut<0 && y<yMax; y++) { 
@@ -194,7 +197,6 @@ function main() {
 			}
 		}
 	}
-	console.log(cut);
 	if (cut > 0) { 
 		var block1 = cube(1).scale([cut,yMax,10]); 
 		var block2 = cube(1).scale([xMax,yMax,10]).translate([cut,0,0]); 
@@ -208,16 +210,67 @@ function main() {
 		segments = newsegments;  
 	}
 
+	cut = -1; 
+	for (y=0; cut<0 && y<yMax; y++) { 
+		if (typeof(twoD[y]) == 'undefined') continue; 
+		for (x=0; cut<0 && x<xMax; x++) { 
+			if (twoD[y][x] == 'H') { 
+				cut = y; 
+				break; 
+			}
+		}
+	}
+	if (cut > 0) { 
+		var block1 = cube(1).scale([xMax,cut,10]); 
+		var block2 = cube(1).scale([xMax,yMax,10]).translate([0,cut,0]); 
+		var newsegments = []; 
+		for (var i=0; i<segments.length; i++) { 
+			var part1 = segments[i].intersect(block1); 
+			var part2 = segments[i].intersect(block2); 
+			newsegments.push(part1); 
+			newsegments.push(part2); 
+		}
+		segments = newsegments;  
+	}
+
+	cut=5; 
+	if (cut > 0) { 
+		var block1 = cube(1).scale([xMax,yMax,cut]); 
+		var block2 = cube(1).scale([xMax,yMax,10]).translate([0,0,cut]); 
+		var newsegments = []; 
+		for (var i=0; i<segments.length; i++) { 
+			var part1 = segments[i].intersect(block1); 
+			var part2 = segments[i].intersect(block2); 
+			newsegments.push(part1); 
+			newsegments.push(part2); 
+		}
+		segments = newsegments;  
+	}
+
+	// Color everything	
+	var hueinc = (1/(segments.length+1)); 
 	for(var i=0; i<segments.length; i++) { 
-		segments[i] = segments[i].setColor(1/(i+1), 1-(1/i+1), 0); 
+		segments[i] = segments[i].setColor(hsl2rgb(i*hueinc,1,0.5)); 
+	}
+	
+	// Final polish. 
+	var scale=48; 
+	var feetTomm=304.8; 
+	var finalX = (28 * feetTomm)/scale;   
+	var finalY = (20 * feetTomm)/scale;   
+	var finalZ = (8 * feetTomm)/scale; 
+	for (var i=0; i<segments.length; i++) { 
+		segments[i] = segments[i].mirroredY().scale([finalX/xMax, finalY/yMax, finalZ/10]); 
 	}
 	
 	return segments; 
-/*	// Final polish. 
-	floor = floor.mirroredY(); 
-	var finalX = 28;   // feet
-	var finalY = 20;   // feet
-	var finalZ = 8; 
-	floor = floor.scale([finalX/xMax, finalY/yMax, finalZ/10]); 
-	return floor; */
+	
+	// TODO: find a way to lay the objects out.  Probably want to flip the top pieces over. 
+	
+	// Convert to multi-part format -- THIS DOES NOT WORK
+	/* var newsegments = []; 
+	for (var i=0; i<segments.length; i++) { 
+		newsegments.push({ name: "A"+i, caption: "A"+i, data: segments[i]});
+	}
+	return newsegments; */
 }
