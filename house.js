@@ -53,7 +53,7 @@ function main() {
 "#................#.......................#.................d............................#\n"+
 "#................#########################.................d............................#\n"+
 "#........................................d.................d............................#\n"+
-"#........................................d.................d............................#\n"+
+"#........................................d.................d............................# H\n"+
 "#........................................d.................d............................#\n"+
 "#........................................d.................d............................#\n"+
 "#........................................d.................##############################\n"+
@@ -84,7 +84,8 @@ function main() {
 "#........................................b.....#........................................#\n"+
 "#........................................b.....#........................................#\n"+
 "#........................................#.....#........................................#\n"+
-"#########################################################################################";
+"#########################################################################################\n"+
+"                                       V"; ;
    			 
     var translate = new Object(); 
 	translate['#'] = function() { return cube(1).scale([1,1,10]); }; 
@@ -123,11 +124,9 @@ function main() {
             y++; 
 			twoD[y]=[]; 
 		} else { 
-			if (ch in translate) { 
-			   twoD[y][x] = ch; 
-			   if (x>=xMax) { xMax = x+1; }
-			   if (y>=yMax) { yMax = y+1; }
-			}
+		   twoD[y][x] = ch; 
+		   if (x>=xMax) { xMax = x+1; }
+		   if (y>=yMax) { yMax = y+1; }
 		}
 	}
 
@@ -155,7 +154,7 @@ function main() {
 	
 	for (y=0; y<yMax+10; y++) { 
 		if (typeof (twoD[y]) == 'undefined') continue; 
-    	for (x = 0; x < xMax+10; x++) { 
+    	for (x = 0; x < xMax; x++) { 
 			var ch = twoD[y][x]; 
 			if (ch in translate) { 
 			
@@ -182,10 +181,43 @@ function main() {
 		}
 	} 
     var floor = union(segments); 
+	segments = [ floor ]; 
+	
+	// Now try to cut it along the "V" 
+	var cut = -1; 
+	for (y=0; cut<0 && y<yMax; y++) { 
+		if (typeof(twoD[y]) == 'undefined') continue; 
+		for (x=0; cut<0 && x<xMax; x++) { 
+			if (twoD[y][x] == 'V') { 
+				cut = x; 
+				break; 
+			}
+		}
+	}
+	console.log(cut);
+	if (cut > 0) { 
+		var block1 = cube(1).scale([cut,yMax,10]); 
+		var block2 = cube(1).scale([xMax,yMax,10]).translate([cut,0,0]); 
+		var newsegments = []; 
+		for (var i=0; i<segments.length; i++) { 
+			var part1 = segments[i].intersect(block1); 
+			var part2 = segments[i].intersect(block2); 
+			newsegments.push(part1); 
+			newsegments.push(part2); 
+		}
+		segments = newsegments;  
+	}
+
+	for(var i=0; i<segments.length; i++) { 
+		segments[i] = segments[i].setColor(1/(i+1), 1-(1/i+1), 0); 
+	}
+	
+	return segments; 
+/*	// Final polish. 
 	floor = floor.mirroredY(); 
 	var finalX = 28;   // feet
 	var finalY = 20;   // feet
 	var finalZ = 8; 
 	floor = floor.scale([finalX/xMax, finalY/yMax, finalZ/10]); 
-	return floor; 
+	return floor; */
 }
