@@ -166,56 +166,50 @@ function main() {
 	var xMax = twoD.GetXMax();
 	var yMax = twoD.GetYMax(); 
 
-	// ordered by x times y -- most thingies grabbed. 
-	var tryBuckets = [ [6,6],        //36
-					   [6,5],[5,6],  //30 
-					   [5,5],        //25
-					   [6,4],[4,6],  //24
-					   [4,5],[5,4],  //20
-					   [6,3],[3,6],  //18
-					   [4,4],        //16
-					   [3,5],[5,3],  //15
-					   [4,3],[3,4],[6,2],[2,6],  //12
-					   [2,5],[5,2],  //10
-					   [3,3],        // 9
-					   [4,2],[2,4],  // 8
-					   [3,2],[2,3],[6,1],[1,6], // 6
-					   [1,5],[5,1],  // 5
-					   [2,2],[4,1],[1,4], // 4
-					   [3,1],[1,3],  // 3
-					   [2,1],[1,2] ]; // 2
+	var tryBuckets = [];
+	for(x=1; x<xMax; x++) { 
+		for (y=1; y<yMax; y++) { 
+			tryBuckets.push([x,y]); 
+		}
+	}
+	tryBuckets.sort(
+		function(a,b) { 
+			return (b[0]*b[1]) - (a[0]*a[1]) 
+		} 
+	);
 	
 	// TODO: idea is to look for "groups" of things, like >, so can replace the whole thing with 
 	// a set of steps.   Only when we get steps, though. 
 	
-	for (y=0; y<=twoD.GetYMax(); y++) { 
-    	for (x = 0; x < twoD.GetXMax(); x++) { 
-			var ch = twoD.Get(x,y); 
-			if (ch in translate) { 
-			
-				var found = false; 
-				// see how much we can grab
-				for (var tbi = 0; !found && tbi < tryBuckets.length; tbi++) { 
-					var dx = tryBuckets[tbi][0]; 
-					var dy = tryBuckets[tbi][1]; 
-					
+	for (var tbi=0; tbi<tryBuckets.length; tbi++) {
+		var dx = tryBuckets[tbi][0]; 
+		var dy = tryBuckets[tbi][1]; 
+		for (y=0; y<=twoD.GetYMax()-dy; y++) { 
+			for (x = 0; x < twoD.GetXMax()-dx; x++) { 
+				var ch = twoD.Get(x,y); 
+				if (ch in translate) { 
 					if (twoD.BlockEqual(x,y,dx,dy,ch)) { 
 						var s = translate[ch] (); 
 						s = s.scale([dx,dy,1]).translate([x,y,0]); 
 						segments.push(s); 
 						twoD.BlockSet(x,y,dx,dy,undefined);	
-						found = true; 
 					}
 				}
-				if (!found) { 
-					var s = translate[ch] (); 
-					s = s.translate([x,y,0]); 
-					segments.push(s);
-				}
 			}
-		}
-	} 
-    var floor = union(segments); 
+		} 
+	}
+	
+	// Color everything	
+	for(var i=0; i<segments.length; i++) { 
+		segments[i] = segments[i].setColor(hsl2rgb(Math.random(),Math.random()*0.5+0.5,0.5)); 
+	}
+	
+	return segments; 
+//							var s = translate[ch] (); 
+//						s = s.translate([x,y,0]); 
+//						segments.push(s);
+
+	var floor = union(segments); 
 	segments = [ floor ]; 
 	
 	// Now try to cut it along the "V" 
@@ -261,11 +255,7 @@ function main() {
 		segments = newsegments;  
 	}
 
-	// Color everything	
-	var hueinc = (1/(segments.length+1)); 
-	for(var i=0; i<segments.length; i++) { 
-		segments[i] = segments[i].setColor(hsl2rgb(i*hueinc,1,0.5)); 
-	}
+
 	
 	// Final polish. 
 	var scale=48; 
