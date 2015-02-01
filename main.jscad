@@ -141,7 +141,7 @@ function main() {
 	segments = [ floor ]; 
 
 	// Final polish. 
-	var scale=72; 
+	var scale=36; 
 	var feetTomm=304.8; 
 	var finalX = (30 * feetTomm)/scale;   
 	var finalY = (20 * feetTomm)/scale;   
@@ -151,7 +151,10 @@ function main() {
 	}
 
 	// Do some cutting with nobbies
-	segments = GG.zcut(segments,0.4,.5,"   N     N             N         N   "); 
+	segments = GG.zcut(segments,0.5,.5,"    N                 N     "); 
+	segments = GG.xcut(segments,0.4,.5,"   N      N        N  "); 
+	segments = GG.ycut(segments,0.4,.5,"     N     N         N          N "); 
+	
 	
 	// Color everything	
 	for(var i=0; i<segments.length; i++) { 
