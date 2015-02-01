@@ -1,27 +1,67 @@
-// title: OpenJSCAD.org Logo
-// author: Rene K. Mueller 
-// license: Creative Commons CC BY
-// URL: http://openjscad.org/#examples/logo.jscad
-// revision: 0.003
-// tags: Logo,Intersection,Sphere,Cube
+// javascript classes example copied from: http://javascript.crockford.com/private.html
 
-function  IsAllTheSame(twoD,x,y,dx,dy,ch) { 
-	for (var y2 = y; y2<y+dy; y2++) { 
-		for (var x2 = x; x2<x+dx; x2++) { 
-		   if (typeof(twoD[y2]) == 'undefined') return false; 
-		   if (twoD[y2][x2] != ch) return false; 
-		}
-	}
-	return true; 
-}
+var GeekyGulati = GeekyGulati || {}; 
+GeekyGulati.TwoD = function() { 
 
-function SetAsConsumed(twoD,x,y,dx,dy) { 
-	for (var y2 = y; y2<y+dy; y2++) { 
-		for (var x2 = x; x2<x+dx; x2++) { 
-		   twoD[y2][x2] = undefined; 
-		}
+	// This defines a two-D space starting at 0,0
+	// various operations for getting, setting, and finding. 
+
+	var _store = []; 
+	var _xmax=0, _ymax = 0; 
+	var _that = this; 
+	
+	this.Set = function(x,y,v) { 
+		if (y>_ymax) _ymax = y;
+		if (typeof(_store[y])=='undefined') _store[y]=[]; 
+		if (x>_xmax) _xmax = x; 
+		_store[y][x] = v;
+		return _that; 
+	};
+	
+	this.Get = function(x,y) { 
+		if (typeof(_store[y])=='undefined') return undefined; 
+		return _store[y][x]; 
 	}
-	return true; 
+	
+	this.BlockEqual = function(x,y,dx,dy,v) { 
+		for (var y2 = y; y2<y+dy; y2++) { 
+			if (typeof(_store[y2]) == 'undefined') return false; 
+			for (var x2 = x; x2<x+dx; x2++) { 
+			   if (_store[y2][x2] != v) return false; 
+			}
+		}
+		return true;
+	}
+	
+	this.BlockSet = function(x,y,dx,dy,v) {
+		if (y+dy > _ymax) _ymax = y+dy; 
+		if (x+dx > _xmax) _xmax = x+dx; 
+		for (var y2 = y; y2<y+dy; y2++) { 
+			if (typeof(_store[y2]) == 'undefined') _store[y2]=[];
+			for (var x2 = x; x2<x+dx; x2++) { 
+			   _store[y2][x2]=v; 
+			}
+		}
+		return _that; 
+	}
+
+	this.GetXMax = function() { return _xmax; } 
+	this.GetYMax = function() { return _ymax; }
+	
+	this.FindSingle = function(v) { 
+		// Returns {X:x,Y:y} of location found or 0
+		for (var y = 0; y <= _ymax; y++) { 
+			if (typeof(_store[y]) == 'undefined') continue; 
+			for (var x = 0; x<= _xmax; x++) { 
+			    if (_store[y][x] == v) { 
+				    echo("found "+v+" at "+x+" "+y); 
+					return { X:x, Y:y }; 
+			   }
+			}
+		}
+		echo (v+" not found");
+		return 0;
+	}
 }
 
 function main() {
@@ -110,10 +150,7 @@ function main() {
 		]);
 	}
 
-	var twoD = [];
-	twoD[0] = []; 
-    var xMax = 0; 
-    var yMax = 0; 	
+	var twoD = new GeekyGulati.TwoD(); 
     var x=0; 
     var y=0; 
     for(var i=0, len=template.length; i<len; i++) {
@@ -122,84 +159,60 @@ function main() {
         if (ch == '\n' || ch=='\r') { 
             x = 0; 
             y++; 
-			twoD[y]=[]; 
 		} else { 
-		   twoD[y][x] = ch; 
-		   if (x>=xMax) { xMax = x+1; }
-		   if (y>=yMax) { yMax = y+1; }
+		   twoD.Set(x,y,ch); 
 		}
 	}
+	var xMax = twoD.GetXMax();
+	var yMax = twoD.GetYMax(); 
 
-	// ordered by x times y -- most thingies grabbed. 
-	var tryBuckets = [ [6,6],        //36
-					   [6,5],[5,6],  //30 
-					   [5,5],        //25
-					   [6,4],[4,6],  //24
-					   [4,5],[5,4],  //20
-					   [6,3],[3,6],  //18
-					   [4,4],        //16
-					   [3,5],[5,3],  //15
-					   [4,3],[3,4],[6,2],[2,6],  //12
-					   [2,5],[5,2],  //10
-					   [3,3],        // 9
-					   [4,2],[2,4],  // 8
-					   [3,2],[2,3],[6,1],[1,6], // 6
-					   [1,5],[5,1],  // 5
-					   [2,2],[4,1],[1,4], // 4
-					   [3,1],[1,3],  // 3
-					   [2,1],[1,2] ]; // 2
+	var tryBuckets = [];
+	for(x=1; x<xMax; x++) { 
+		for (y=1; y<yMax; y++) { 
+			tryBuckets.push([x,y]); 
+		}
+	}
+	tryBuckets.sort(
+		function(a,b) { 
+			return (b[0]*b[1]) - (a[0]*a[1]) 
+		} 
+	);
 	
 	// TODO: idea is to look for "groups" of things, like >, so can replace the whole thing with 
 	// a set of steps.   Only when we get steps, though. 
 	
-	for (y=0; y<yMax+10; y++) { 
-		if (typeof (twoD[y]) == 'undefined') continue; 
-    	for (x = 0; x < xMax; x++) { 
-			var ch = twoD[y][x]; 
-			if (ch in translate) { 
-			
-				var found = false; 
-				// see how much we can grab
-				for (var tbi = 0; !found && tbi < tryBuckets.length; tbi++) { 
-					var dx = tryBuckets[tbi][0]; 
-					var dy = tryBuckets[tbi][1]; 
-					
-					if (IsAllTheSame(twoD,x,y,dx,dy,ch)) { 
+	for (var tbi=0; tbi<tryBuckets.length; tbi++) {
+		var dx = tryBuckets[tbi][0]; 
+		var dy = tryBuckets[tbi][1]; 
+		for (y=0; y<=twoD.GetYMax()-dy; y++) { 
+			for (x = 0; x < twoD.GetXMax()-dx; x++) { 
+				var ch = twoD.Get(x,y); 
+				if (ch in translate) { 
+					if (twoD.BlockEqual(x,y,dx,dy,ch)) { 
 						var s = translate[ch] (); 
 						s = s.scale([dx,dy,1]).translate([x,y,0]); 
 						segments.push(s); 
-						SetAsConsumed(twoD,x,y,dx,dy);	
-						found = true; 
+						twoD.BlockSet(x,y,dx,dy,undefined);	
 					}
 				}
-				if (!found) { 
-					var s = translate[ch] (); 
-					s = s.translate([x,y,0]); 
-					segments.push(s);
-				}
 			}
-		}
-	} 
-    var floor = union(segments); 
+		} 
+	}
+	
+	
+//	return segments; 
+//							var s = translate[ch] (); 
+//						s = s.translate([x,y,0]); 
+//						segments.push(s);
+
+	var floor = union(segments); 
 	segments = [ floor ]; 
-	
-	// TODO: FOR THE LOVE OF GOD MAKE THESE FUNCTIONS and possibly even better 
-	// some object oriented goodness. 
-	
+/*	
 	// Now try to cut it along the "V" 
-	var cut = -1; 
-	for (y=0; cut<0 && y<yMax; y++) { 
-		if (typeof(twoD[y]) == 'undefined') continue; 
-		for (x=0; cut<0 && x<xMax; x++) { 
-			if (twoD[y][x] == 'V') { 
-				cut = x; 
-				break; 
-			}
-		}
-	}
-	if (cut > 0) { 
-		var block1 = cube(1).scale([cut,yMax,10]); 
-		var block2 = cube(1).scale([xMax,yMax,10]).translate([cut,0,0]); 
+	var cut = twoD.FindSingle('V'); 
+	if (cut) { 
+		var block1 = cube(1).scale([cut.X,yMax,10]); 
+		var block2 = cube(1).scale([xMax,yMax,10]).translate([cut.X,0,0]); 
 		var newsegments = []; 
 		for (var i=0; i<segments.length; i++) { 
 			var part1 = segments[i].intersect(block1); 
@@ -210,19 +223,10 @@ function main() {
 		segments = newsegments;  
 	}
 
-	cut = -1; 
-	for (y=0; cut<0 && y<yMax; y++) { 
-		if (typeof(twoD[y]) == 'undefined') continue; 
-		for (x=0; cut<0 && x<xMax; x++) { 
-			if (twoD[y][x] == 'H') { 
-				cut = y; 
-				break; 
-			}
-		}
-	}
-	if (cut > 0) { 
-		var block1 = cube(1).scale([xMax,cut,10]); 
-		var block2 = cube(1).scale([xMax,yMax,10]).translate([0,cut,0]); 
+	cut = twoD.FindSingle('H'); 
+	if (cut) { 
+		var block1 = cube(1).scale([xMax,cut.Y,10]); 
+		var block2 = cube(1).scale([xMax,yMax,10]).translate([0,cut.Y,0]); 
 		var newsegments = []; 
 		for (var i=0; i<segments.length; i++) { 
 			var part1 = segments[i].intersect(block1); 
@@ -232,7 +236,7 @@ function main() {
 		}
 		segments = newsegments;  
 	}
-
+*/
 	cut=5; 
 	if (cut > 0) { 
 		var block1 = cube(1).scale([xMax,yMax,cut]); 
@@ -248,29 +252,29 @@ function main() {
 	}
 
 	// Color everything	
-	var hueinc = (1/(segments.length+1)); 
 	for(var i=0; i<segments.length; i++) { 
-		segments[i] = segments[i].setColor(hsl2rgb(i*hueinc,1,0.5)); 
+		segments[i] = segments[i].setColor(hsl2rgb(Math.random(),Math.random()*0.5+0.5,0.5)); 
 	}
 	
 	// Final polish. 
-	var scale=48; 
+	var scale=72; 
 	var feetTomm=304.8; 
-	var finalX = (28 * feetTomm)/scale;   
+	var finalX = (30 * feetTomm)/scale;   
 	var finalY = (20 * feetTomm)/scale;   
 	var finalZ = (8 * feetTomm)/scale; 
 	for (var i=0; i<segments.length; i++) { 
 		segments[i] = segments[i].mirroredY().scale([finalX/xMax, finalY/yMax, finalZ/10]); 
 	}
 	
-	return segments; 
+	// return segments; 
+	return segments[0];
 	
 	// TODO: find a way to lay the objects out.  Probably want to flip the top pieces over. 
 	
 	// Convert to multi-part format -- THIS DOES NOT WORK
-	/* var newsegments = []; 
-	for (var i=0; i<segments.length; i++) { 
-		newsegments.push({ name: "A"+i, caption: "A"+i, data: segments[i]});
-	}
-	return newsegments; */
+	//var newsegments = []; 
+	//for (var i=0; i<segments.length; i++) { 
+	//	newsegments.push({ name: "A"+i, caption: "A"+i, data: segments[i]});
+	//}
+	//return newsegments; 
 }
