@@ -36,12 +36,10 @@ function main() {
 
 	var nob = polygon([[0,0],[-nobtrusion,-nobdepth],[nobwidth+nobtrusion,-nobdepth],[nobwidth,0]]);
 	nob = linear_extrude({height:1},nob); 
-	var nobsa = []; 
-	var nobsb = []; 
+	var nobs = []; 
 	for (var nx = firstnob; nx<1; nx+=internobwidth) { 
 		var nob2 =  nob.translate([nx,0,0]).scale([xdist,ydist,zdist]).translate([xmin,ymin+y1,zmin]);
-		nobsa.push(nob2.translate([0,-cutdepth,0])); 
-		nobsb.push(nob2.translate([0,+cutdepth,0])); 
+		nobs.push(nob2); 
 	}
 	var a = polygon([ 
 		[0,0],
