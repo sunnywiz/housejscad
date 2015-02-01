@@ -25,12 +25,7 @@ GG.ycut = function(segments, cutloc, absgap, template) {
 
 	// define the nobs in a [0,0..1,-1] scale
 	// scale down the absgap to 0..1 scale.  This is a bit wierd, though
-	// because the template.length is applied to x, so ratio it from y back to x
-	
-	console.log("absgap = "+absgap); 
-	console.log("xdist = "+xdist); 
-	console.log("ydist = "+ydist); 
-	console.log("template.length = "+template.length); 
+	// because the template.length is applied to x, so ratio it from y back to x 
 	
 	var relgap = ((absgap * (xdist/ydist)) / ydist) * template.length ; 
 	console.log("calculated relgap="+relgap); 
