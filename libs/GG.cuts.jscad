@@ -20,22 +20,35 @@ GG.ycut = function(segments, cutloc, absgap, template) {
 	var zdist = zmax - zmin; 
 	var ydist = ymax - ymin; 
 	var xdist = xmax - xmin; 
-
+	
 	var y1 = ydist * cutloc; 
 
 	// define the nobs in a [0,0..1,-1] scale
-	// figure in gaps later. 
+	// scale down the absgap to 0..1 scale.  This is a bit wierd, though
+	// because the template.length is applied to x, so ratio it from y back to x
+	
+	console.log("absgap = "+absgap); 
+	console.log("xdist = "+xdist); 
+	console.log("ydist = "+ydist); 
+	console.log("template.length = "+template.length); 
+	
+	var relgap = ((absgap * (xdist/ydist)) / ydist) * template.length ; 
+	console.log("calculated relgap="+relgap); 
+	
+	// but don't let it get too big else the nobs are not nobby
+	if (relgap > 0.15) { relgap = 0.15; }
+	
 	var nobouter = polygon([   
-		[0.1,0],
+		[relgap,0],
 		[0,-1],
 		[1,-1],
-		[0.9,0]]);
+		[1-relgap,0]]);
 	nobouter = linear_extrude({height:1},nobouter); 
 	var nobinner = polygon([
-		[0.2,0],
-		[0.1,-0.9],
-		[0.9,-0.9],
-		[0.8,0]]);
+		[relgap*2,0],
+		[relgap,-1+relgap],
+		[1-relgap,-1+relgap],
+		[1-relgap*2,0]]);
 	nobinner = linear_extrude({height:1},nobinner); 
 
 	var nobsa = []; 
