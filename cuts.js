@@ -7,9 +7,6 @@ function main() {
 	var bounds = u.getBounds(); 
 
 	var cutloc = 0.5;   // percentage relative to y
-	
-	var cutscale = 0.1;  // absolute! 
-	
 	// create a bunch of nobs
 
 	
@@ -33,21 +30,35 @@ function main() {
 	var firstnob = 0.2;   // nob at ?
 	var nobdepth = 0.1;    // relative to y
 	var nobtrusion = 0.05;  // relative to x
+	var absgap =0.1;
+	var gap = absgap / ydist; 
 
-	var nob = polygon([[0,0],[-nobtrusion,-nobdepth],[nobwidth+nobtrusion,-nobdepth],[nobwidth,0]]);
-	nob = linear_extrude({height:1},nob); 
-	var nobs = []; 
+	var nobb = polygon([   
+		[0,0],
+		[-nobtrusion,-nobdepth],
+		[nobwidth+nobtrusion,-nobdepth],
+		[nobwidth,0]]);
+	var noba = polygon([
+		[-gap,0],
+		[-nobtrusion-gap,-nobdepth-gap],
+		[nobwidth+nobtrusion+gap,-nobdepth-gap],
+		[nobwidth+gap,0]]);
+	noba = linear_extrude({height:1},noba); 
+	nobb = linear_extrude({height:1},nobb); 
+	
+	var nobsa = []; 
+	var nobsb = []; 
 	for (var nx = firstnob; nx<1; nx+=internobwidth) { 
-		var nob2 =  nob.translate([nx,0,0]).scale([xdist,ydist,zdist]).translate([xmin,ymin+y1,zmin]);
-		nobs.push(nob2); 
+		nobsa.push(noba.translate([nx,0,0]).scale([xdist,ydist,zdist]).translate([xmin,ymin+y1,zmin]));
+		nobsb.push(nobb.translate([nx,0,0]).scale([xdist,ydist,zdist]).translate([xmin,ymin+y1,zmin]));
 	}
 	var a = polygon([ 
 		[0,0],
-		[0,y1],
-		[xdist,y1],
+		[0,y1-absgap],
+		[xdist,y1-absgap],
 		[xdist,0] ]);
 	a = linear_extrude({height:zdist},a).translate([xmin,ymin,zmin]);
-	a = a.subtract(nobs); 
+	a = a.subtract(nobsa); 
 	
 	var b = polygon([ 
 		[0,ydist*cutloc],
@@ -55,7 +66,7 @@ function main() {
 		[xdist,ydist],
 		[0,ydist] ]); 
 	b = linear_extrude({height:zdist},b).translate([xmin,ymin,zmin]);
-	b = b.union(nobs); 
+	b = b.union(nobsb); 
 
 	var newsegments = []; 
 	for (var i=0; i<segments.length; i++) { 
@@ -63,7 +74,7 @@ function main() {
 		newsegments.push(segments[i].intersect(b)); 
 	}
 	segments = newsegments; 
-	
+
 	for(var i=0; i<segments.length; i++) { 
 		console.log(i+" "+segments[i]); 
 		segments[i] = segments[i].setColor(hsl2rgb(Math.random(),Math.random()*0.5+0.5,0.5)); 
