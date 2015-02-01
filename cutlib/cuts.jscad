@@ -1,35 +1,6 @@
-function xcut(segments, cutloc, absgap, template) { 
-	var u = union(segments); 
-	var bounds = u.getBounds(); 
-	var rotsegments = []; 
-	for (var i=0; i< segments.length; i++) { 
-		rotsegments.push(segments[i].translate([-bounds[0].x, -bounds[0].y, -bounds[0].z]).rotateZ(90)); 
-	}
-	rotsegments = ycut(rotsegments, cutloc, absgap, template); 
-	var newsegments = []; 
-	for (var i=0; i< rotsegments.length; i++) { 
-		newsegments.push(rotsegments[i].rotateZ(-90).translate([bounds[0].x, bounds[0].y,bounds[0].z])); 
-	}
-	return newsegments; 
-}
+var GeekyGulati = GeekyGulati || {}; 
 
-function zcut(segments, cutloc, absgap, template) { 
-	var u = union(segments); 
-	var bounds = u.getBounds(); 
-	var rotsegments = []; 
-	for (var i=0; i< segments.length; i++) { 
-		rotsegments.push(segments[i].translate([-bounds[0].x, -bounds[0].y, -bounds[0].z]).rotateX(90)); 
-	}
-	rotsegments = ycut(rotsegments, cutloc, absgap, template); 
-	var newsegments = []; 
-	for (var i=0; i< rotsegments.length; i++) { 
-		newsegments.push(rotsegments[i].rotateX(-90).translate([bounds[0].x, bounds[0].y,bounds[0].z])); 
-	}
-	return newsegments; 
-}
-
-function ycut(segments, cutloc, absgap, template) { 
-
+GeekyGulati.ycut = function(segments, cutloc, absgap, template) { 
 	// It scales the cut to be across the X axis; 
 	// this "scale" also determines how think the nobbies are. 
 	// so if you want the nobbies to be smaller, use "     N      "  instead of "  N  "
@@ -97,26 +68,35 @@ function ycut(segments, cutloc, absgap, template) {
 		newsegments.push(segments[i].intersect(b)); 
 	}
 	return newsegments; 
+};
 
-}
-
-function main() { 
-
-    var segments = []; 
-    segments.push(union(sphere(5),cube(8).translate([-4,-4,-4]))); 
-
-	segments = ycut(segments, 0.5, 0.1, "   N   N   "); 
+GeekyGulati.xcut = function(segments, cutloc, absgap, template) { 
+	var u = union(segments); 
+	var bounds = u.getBounds(); 
+	var rotsegments = []; 
+	for (var i=0; i< segments.length; i++) { 
+		rotsegments.push(segments[i].translate([-bounds[0].x, -bounds[0].y, -bounds[0].z]).rotateZ(90)); 
+	}
+	rotsegments = GeekyGulati.ycut(rotsegments, cutloc, absgap, template); 
 	var newsegments = []; 
-	for (var i=0; i<segments.length; i++) { 
-		newsegments = newsegments.concat( xcut( [segments[i]], 0.5, 0.1, "   N   N   ")); 
-	} 
-	segments = newsegments; 
-	segments = zcut(segments, 0.5, 0.1, "   N   N   "); 
+	for (var i=0; i< rotsegments.length; i++) { 
+		newsegments.push(rotsegments[i].rotateZ(-90).translate([bounds[0].x, bounds[0].y,bounds[0].z])); 
+	}
+	return newsegments; 
+};
 
-	for(var i=0; i<segments.length; i++) { 
-		console.log(i+" "+segments[i]); 
-		segments[i] = segments[i].setColor(hsl2rgb(Math.random(),Math.random()*0.5+0.5,0.5)); 
-	} 
-	return segments; 
-	
-}
+GeekyGulati.zcut = function zcut(segments, cutloc, absgap, template) { 
+	var u = union(segments); 
+	var bounds = u.getBounds(); 
+	var rotsegments = []; 
+	for (var i=0; i< segments.length; i++) { 
+		rotsegments.push(segments[i].translate([-bounds[0].x, -bounds[0].y, -bounds[0].z]).rotateX(90)); 
+	}
+	rotsegments = GeekyGulati.ycut(rotsegments, cutloc, absgap, template); 
+	var newsegments = []; 
+	for (var i=0; i< rotsegments.length; i++) { 
+		newsegments.push(rotsegments[i].rotateX(-90).translate([bounds[0].x, bounds[0].y,bounds[0].z])); 
+	}
+	return newsegments; 
+};
+
