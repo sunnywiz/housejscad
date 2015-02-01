@@ -199,19 +199,15 @@ function main() {
 		} 
 	}
 	
-	// Color everything	
-	for(var i=0; i<segments.length; i++) { 
-		segments[i] = segments[i].setColor(hsl2rgb(Math.random(),Math.random()*0.5+0.5,0.5)); 
-	}
 	
-	return segments; 
+//	return segments; 
 //							var s = translate[ch] (); 
 //						s = s.translate([x,y,0]); 
 //						segments.push(s);
 
 	var floor = union(segments); 
 	segments = [ floor ]; 
-	
+/*	
 	// Now try to cut it along the "V" 
 	var cut = twoD.FindSingle('V'); 
 	if (cut) { 
@@ -240,7 +236,7 @@ function main() {
 		}
 		segments = newsegments;  
 	}
-
+*/
 	cut=5; 
 	if (cut > 0) { 
 		var block1 = cube(1).scale([xMax,yMax,cut]); 
@@ -255,19 +251,23 @@ function main() {
 		segments = newsegments;  
 	}
 
-
+	// Color everything	
+	for(var i=0; i<segments.length; i++) { 
+		segments[i] = segments[i].setColor(hsl2rgb(Math.random(),Math.random()*0.5+0.5,0.5)); 
+	}
 	
 	// Final polish. 
-	var scale=48; 
+	var scale=72; 
 	var feetTomm=304.8; 
-	var finalX = (28 * feetTomm)/scale;   
+	var finalX = (30 * feetTomm)/scale;   
 	var finalY = (20 * feetTomm)/scale;   
 	var finalZ = (8 * feetTomm)/scale; 
 	for (var i=0; i<segments.length; i++) { 
 		segments[i] = segments[i].mirroredY().scale([finalX/xMax, finalY/yMax, finalZ/10]); 
 	}
 	
-	return segments; 
+	// return segments; 
+	return segments[0];
 	
 	// TODO: find a way to lay the objects out.  Probably want to flip the top pieces over. 
 	
