@@ -1,6 +1,7 @@
-var GeekyGulati = GeekyGulati || {}; 
-
-GeekyGulati.ycut = function(segments, cutloc, absgap, template) { 
+if (typeof(GG) == 'undefined') { 
+	GG={}; 
+} 
+GG.ycut = function(segments, cutloc, absgap, template) { 
 	// It scales the cut to be across the X axis; 
 	// this "scale" also determines how think the nobbies are. 
 	// so if you want the nobbies to be smaller, use "     N      "  instead of "  N  "
@@ -70,14 +71,14 @@ GeekyGulati.ycut = function(segments, cutloc, absgap, template) {
 	return newsegments; 
 };
 
-GeekyGulati.xcut = function(segments, cutloc, absgap, template) { 
+GG.xcut = function(segments, cutloc, absgap, template) { 
 	var u = union(segments); 
 	var bounds = u.getBounds(); 
 	var rotsegments = []; 
 	for (var i=0; i< segments.length; i++) { 
 		rotsegments.push(segments[i].translate([-bounds[0].x, -bounds[0].y, -bounds[0].z]).rotateZ(90)); 
 	}
-	rotsegments = GeekyGulati.ycut(rotsegments, cutloc, absgap, template); 
+	rotsegments = GG.ycut(rotsegments, cutloc, absgap, template); 
 	var newsegments = []; 
 	for (var i=0; i< rotsegments.length; i++) { 
 		newsegments.push(rotsegments[i].rotateZ(-90).translate([bounds[0].x, bounds[0].y,bounds[0].z])); 
@@ -85,14 +86,14 @@ GeekyGulati.xcut = function(segments, cutloc, absgap, template) {
 	return newsegments; 
 };
 
-GeekyGulati.zcut = function zcut(segments, cutloc, absgap, template) { 
+GG.zcut = function zcut(segments, cutloc, absgap, template) { 
 	var u = union(segments); 
 	var bounds = u.getBounds(); 
 	var rotsegments = []; 
 	for (var i=0; i< segments.length; i++) { 
 		rotsegments.push(segments[i].translate([-bounds[0].x, -bounds[0].y, -bounds[0].z]).rotateX(90)); 
 	}
-	rotsegments = GeekyGulati.ycut(rotsegments, cutloc, absgap, template); 
+	rotsegments = GG.ycut(rotsegments, cutloc, absgap, template); 
 	var newsegments = []; 
 	for (var i=0; i< rotsegments.length; i++) { 
 		newsegments.push(rotsegments[i].rotateX(-90).translate([bounds[0].x, bounds[0].y,bounds[0].z])); 
