@@ -2,15 +2,18 @@ function main() {
 
     var segments = []; 
     segments.push(union(sphere(5),cube(8).translate([-4,-4,-4]))); 
+
+	var cutloc = 0.5;      // percentage relative to y
+	var absgap = 0.1; 
+	var template = " N N ";  //  how do we want this cut. 
+	
+	// It scales the cut to be across the X axis; 
+	// this "scale" also determines how think the nobbies are. 
+	// so if you want the nobbies to be smaller, use "     N      "  instead of "  N  "
 	
 	var u = union(segments); 
 	var bounds = u.getBounds(); 
 
-	var cutloc = 0.5;   // percentage relative to y
-	// create a bunch of nobs
-
-	
-	
 	// start cut code
 	var xmin = bounds[0].x; 
 	var ymin = bounds[0].y; 
@@ -18,40 +21,37 @@ function main() {
 	var xmax = bounds[1].x; 
 	var ymax = bounds[1].y; 
 	var zmax = bounds[1].z; 
-	
+
 	var zdist = zmax - zmin; 
 	var ydist = ymax - ymin; 
 	var xdist = xmax - xmin; 
 
 	var y1 = ydist * cutloc; 
 
-	var nobwidth = 0.1; // relative to 0..1
-	var internobwidth=0.5; 
-	var firstnob = 0.2;   // nob at ?
-	var nobdepth = 0.1;    // relative to y
-	var nobtrusion = 0.05;  // relative to x
-	var absgap =0.1;
-	var gap = absgap / ydist; 
+	// define the nobs in a [0,0..1,-1] scale
+	// figure in gaps later. 
+	var nobouter = polygon([   
+		[0.1,0],
+		[0,-1],
+		[1,-1],
+		[0.9,0]]);
+	nobouter = linear_extrude({height:1},nobouter); 
+	var nobinner = polygon([
+		[0.2,0],
+		[0.1,-0.9],
+		[0.9,-0.9],
+		[0.8,0]]);
+	nobinner = linear_extrude({height:1},nobinner); 
 
-	var nobb = polygon([   
-		[0,0],
-		[-nobtrusion,-nobdepth],
-		[nobwidth+nobtrusion,-nobdepth],
-		[nobwidth,0]]);
-	var noba = polygon([
-		[-gap,0],
-		[-nobtrusion-gap,-nobdepth-gap],
-		[nobwidth+nobtrusion+gap,-nobdepth-gap],
-		[nobwidth+gap,0]]);
-	noba = linear_extrude({height:1},noba); 
-	nobb = linear_extrude({height:1},nobb); 
-	
 	var nobsa = []; 
 	var nobsb = []; 
-	for (var nx = firstnob; nx<1; nx+=internobwidth) { 
-		nobsa.push(noba.translate([nx,0,0]).scale([xdist,ydist,zdist]).translate([xmin,ymin+y1,zmin]));
-		nobsb.push(nobb.translate([nx,0,0]).scale([xdist,ydist,zdist]).translate([xmin,ymin+y1,zmin]));
+	for (var i=0; i<template.length; i++) { 
+		if (template[i] == 'N') { 
+			nobsa.push(nobouter.translate([i,0,0]).scale([xdist/template.length,xdist/template.length,zdist]).translate([xmin,ymin+y1,zmin]));
+			nobsb.push(nobinner.translate([i,0,0]).scale([xdist/template.length,xdist/template.length,zdist]).translate([xmin,ymin+y1,zmin]));
+		}
 	}
+
 	var a = polygon([ 
 		[0,0],
 		[0,y1-absgap],
@@ -61,8 +61,8 @@ function main() {
 	a = a.subtract(nobsa); 
 	
 	var b = polygon([ 
-		[0,ydist*cutloc],
-		[xdist,ydist*cutloc],
+		[0,y1],
+		[xdist,y1],
 		[xdist,ydist],
 		[0,ydist] ]); 
 	b = linear_extrude({height:zdist},b).translate([xmin,ymin,zmin]);
