@@ -1,10 +1,9 @@
 
-function main() { 
-
-    var template = "#  # ##  /#\\  /\\  \\#/ #";
-    
+var convertToNobs = function(template, gap) { 
+	
     var a=[];
-    var gap = 0.1; 
+	var b=[]; 
+	
     for (var i=0; i<template.length; i++) { 
 		var ch = template[i];
         
@@ -55,8 +54,15 @@ function main() {
             inner = inner.setColor([0,1,0]);
             
             a.push(outer);
-            a.push(inner);
+            b.push(inner);
         }
 	}
-	return a; 
+	return [a,b]; 
+}
+
+function main() { 
+    var template = "#  # ##  /#\\  /\\  \\#/ #";    
+    var gap = 0.1; 
+	var bar = convertToNobs(template, gap); 
+	return bar[0].concat(bar[1]);
 }
