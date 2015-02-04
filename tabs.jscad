@@ -1,10 +1,11 @@
 
 function main() { 
-    var template = "#  # ##  /#\\  /\  \#/ ";
+
+    var template = "#  # ##  /#\\  /\\  \\#/ #";
     
     var a=[];
     var gap = 0.1; 
-	for (var i=0; i<template.length; i++) { 
+    for (var i=0; i<template.length; i++) { 
 		var ch = template[i];
         
         var outer = 0; 
@@ -14,17 +15,35 @@ function main() {
 		var rightx = 1-gap;
 		var topy = -1+gap;
 		var bottomy = 0; 
-		if (template[i-1] != ' ') { startx = 0; }
-		if (template[i+1] != ' ') { endx = 1; }
+		if (i>0 && template[i-1] != ' ') { leftx = 0; }
+		if (i<template.length-1 &&template[i+1] != ' ') { rightx = 1; }
 
 		if (ch=='#') { 
             outer = polygon([[0,0],[0,-1],[1,-1],[1,0]]);
-            inner = polygon([[startx,0],[startx,topy],[endx,topy],[endx,0]]);
-        } 
-		if (ch=='/') { 
-			outer = polygon([[0,0],[1,-1],[1,0]]);
-			inner = polygon([[startx,0],[endx,
+            inner = polygon([[leftx,0],[leftx,topy],[rightx,topy],[rightx,0]]);
+        }
+		
+		if (ch=='/') 
+        {
+            if (template[i-1]=='#') { 
+                outer = polygon([[0,0],[0,-1],[0.5,-1],[gap,0]]); 
+                inner = polygon([[0,0],[0,topy],[0.5-1.5*gap,topy]]);
+            } else { 
+        		outer = polygon([[0,0],[1,-1],[1,0]]);
+    			inner = polygon([[leftx,0],[rightx,topy],[rightx,0]]);
+            }
 		}
+        
+        if (ch=='\\') { 
+            if (template[i+1]=='#') { 
+                outer = polygon([[1,0],[1,-1],[0.5,-1],[1-gap,0]]); 
+                inner = polygon([[1,0],[1,topy],[0.5+1.5*gap,topy]]);
+            } else { 
+        		outer = polygon([[0,0],[0,-1],[1,0]]);
+    			inner = polygon([[leftx,0],[leftx,topy],[rightx,0]]);
+            }
+        }
+		
         if (outer && inner) {
             
             outer = linear_extrude({height: 0.1}, outer);
