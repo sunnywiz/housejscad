@@ -65,27 +65,27 @@ function main() {
 "                                       V"; ;
    			 
     var translate = new Object(); 
-	translate['#'] = function() { return cube(1).scale([1,1,10]); }; 
+	
+	// floor = 1 foot (joists and all)  
+	// window = 3 feet after floor, 4 feet of window
+	// door = 7 feet of door
+	// above door and window = 1 foot.
+	
+	translate['#'] = function() { return cube(1).scale([1,1,9]); }; 
 	translate['.'] = function() { return cube(1); }; 
 	translate['b'] = function() { return cube(1); }; 
 	translate['d'] = function() { 
 		return union([
 			cube(1), 
-			cube(1).translate([0,0,9])
+			cube(1).translate([0,0,8])
 		]); 
 	}; 
 	translate['w'] = function()	{ 
 		return union([
-			cube({size: [1,1,5]}), 
-			cube(1).translate([0,0,9])
+			cube({size: [1,1,4]}), 
+			cube(1).translate([0,0,8])
 		]); 
 	};
-	translate['O'] = function() { 
-	    return union([ 
-			cube(1),
-			cylinder({r:0.5,h:10}).translate([0.5,0.5,0])
-		]);
-	}
 
 	var twoD = new GG.TwoD(); 
     var x=0; 
@@ -137,11 +137,14 @@ function main() {
 	}
 	
 
-	var floor = union(segments); 
+	var floor = union(segments);  
+	var b = floor.getBounds(); 
+	floor.translate([b[0].x,b[0].y,b[0].z]); 
+	
 	segments = [ floor ]; 
 
-	// Final polish. 
-	var scale=36; 
+	// Final polish.  Set scale
+	var scale=48; 
 	var feetTomm=304.8; 
 	var finalX = (30 * feetTomm)/scale;   
 	var finalY = (20 * feetTomm)/scale;   
@@ -149,19 +152,23 @@ function main() {
 	for (var i=0; i<segments.length; i++) { 
 		segments[i] = segments[i].mirroredY().scale([finalX/xMax, finalY/yMax, finalZ/10]); 
 	}
-
-	// Do some cutting with nobbies
-	segments = GG.zcut(segments,0.5,.5,"    N                 N     "); 
-	segments = GG.xcut(segments,0.4,.5,"   N      N        N  "); 
-	segments = GG.ycut(segments,0.4,.5,"     N     N         N          N "); 
 	
+	// Do some cutting with nobbies
+	segments = GG.zcut(segments,0.3,0.9," N              N "); 
+	segments = GG.xcut(segments,0.4,0.9," N              N "); 
+	segments = GG.ycut(segments,0.8,0.9," N              N "); 
+	
+	
+	// add in some scale things. my bed handles about 130mm cubed
+	segments.push( cube(1).scale([130,2,3]).translate([0,15,-15]) ); 
+	segments.push( cube(1).scale([1,-130,3]).translate([-15,0,-15]) ); 
+	segments.push( cube(1).scale([1,2,130]).translate([-15,15,0]) ); 
 	
 	// Color everything	
 	for(var i=0; i<segments.length; i++) { 
 		segments[i] = segments[i].setColor(hsl2rgb(Math.random(),Math.random()*0.5+0.5,0.5)); 
 	}
 	
-	// return segments; 
 	return segments;
 	
 	// TODO: find a way to lay the objects out.  Probably want to flip the top pieces over. 
