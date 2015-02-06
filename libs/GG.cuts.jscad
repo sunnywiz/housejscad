@@ -1,8 +1,10 @@
 if (typeof(GG) == 'undefined') { 
 	GG={}; 
 } 
-GG.ycut = function(segments, cutloc, absgap, template) { 
-	// It scales the cut to be across the X axis; 
+
+GG.ycut = function(segments, cutloc, absgap, template) {
+ 
+	// It scales the cut to be across the X and Z access 
 	// this "scale" also determines how think the nobbies are. 
 	// so if you want the nobbies to be smaller, use "     N      "  instead of "  N  "
 	
