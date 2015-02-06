@@ -20,7 +20,12 @@ var convertToNobs = function(template, gap) {
 		if (ch=='#') { 
             outer = polygon([[0,0],[0,-1],[1,-1],[1,0]]);
             inner = polygon([[leftx,0],[leftx,topy],[rightx,topy],[rightx,0]]);
-        }
+        } 
+		
+		if (ch=='.') { 
+			outer = polygon([[0.5-2*gap, 0], [0.5, -2 * gap], [0.5+2*gap,0]]); 
+			inner = polygon([[0.5-1*gap, 0], [0.5, -1 * gap], [0.5+1*gap,0]]); 
+		}
 		
 		if (ch=='/') 
         {
@@ -61,7 +66,7 @@ var convertToNobs = function(template, gap) {
 }
 
 function main() { 
-    var template = "#  # ##  /#\\  /\\  \\#/ #";    
+    var template = "#  # ##  /#\\ . /\\  \\#/ #";    
     var gap = 0.1; 
 	var bar = convertToNobs(template, gap); 
 	return bar[0].concat(bar[1]);
