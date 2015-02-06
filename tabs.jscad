@@ -5,8 +5,8 @@ var convertToNobs = function(template, gap) {
     
     var a=[];
     var b=[]; 
-	
-	if (gap > 0.2) gap=0.2; 
+    
+    if (gap > 0.2) gap=0.2; 
 	
     for (var i=0; i<template.length; i++) { 
 		var ch = template[i];
@@ -18,8 +18,8 @@ var convertToNobs = function(template, gap) {
 		var rightx = 1-gap;
 		var topy = -1+gap;
 		var bottomy = 0; 
-		if (i>0 && template[i-1] != ' ') { leftx = 0; }
-		if (i<template.length-1 &&template[i+1] != ' ') { rightx = 1; }
+		if (template[i-1] != ' ') { leftx = 0; }
+		if (template[i+1] != ' ') { rightx = 1; }
 
 		if (ch=='#') { 
             outer = polygon([[0,0],[0,-1],[1,-1],[1,0]]);
@@ -59,7 +59,7 @@ var convertToNobs = function(template, gap) {
             outer = outer.setColor([1,0,0]);   
             
             inner = linear_extrude({height: 1}, inner); 
-            inner = inner.translate([i,0,0.1]);
+            inner = inner.translate([i,0,0]);
             inner = inner.setColor([0,1,0]);
             
             a.push(outer);
@@ -106,19 +106,27 @@ var testycut = function(segments, pctCut, absGap, xtemplate, ztemplate) {
     var xgap = absGap / xtemplateUnit; 	
 	var xnobs = convertToNobs(xtemplate, xgap);  // 0..xtemplate.Length, 1
 	
-	
 	for (var i=0; i<xnobs[0].length; i++) { 
 		xnobs[0][i] = xnobs[0][i].
 			scale([xdist/xtemplate.length,xdist/xtemplate.length,zdist]).
-			translate([xmin,ymin,zmin]); 
+			translate([xmin,y1,zmin]);
+	}			
+	for (var i=0; i<xnobs[1].length; i++) { 
+		xnobs[1][i] = xnobs[1][i].
+			scale([xdist/xtemplate.length,xdist/xtemplate.length,zdist]).
+			translate([xmin,y1,zmin]); 
 	}	
-	return [a].concat(xnobs[0]); 
+	a = a.subtract(xnobs[0]); 
+	b = b.union(xnobs[1]); 
+	
+	return [a,b];
+	
 }
 
 function main() { 
 	var segments = [ cube(50) ];
 	
-	var segments = testycut(segments, 0.5, 0.5, "#  # ##  /#\\ . /\\  \\#/ #", "      .      ");    
+	var segments = testycut(segments, 0.5, 0.2, "#  # ##  /#\\ . /\\  \\#/ #", "      .      ");    
 	
 	// Color everything	
 	for(var i=0; i<segments.length; i++) { 
