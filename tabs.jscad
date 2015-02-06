@@ -7,9 +7,9 @@ var convertToNobs = function(template, gap) {
     var b=[]; 
     
     if (gap > 0.2) gap=0.2; 
-	
+    
     for (var i=0; i<template.length; i++) { 
-		var ch = template[i];
+    	var ch = template[i];
         
         var outer = 0; 
         var inner = 0;
@@ -105,19 +105,39 @@ var testycut = function(segments, pctCut, absGap, xtemplate, ztemplate) {
 	var xtemplateUnit = xdist / xtemplate.length;  // each nob is this wide
     var xgap = absGap / xtemplateUnit; 	
 	var xnobs = convertToNobs(xtemplate, xgap);  // 0..xtemplate.Length, 1
-	
 	for (var i=0; i<xnobs[0].length; i++) { 
 		xnobs[0][i] = xnobs[0][i].
-			scale([xdist/xtemplate.length,xdist/xtemplate.length,zdist]).
+			scale([xtemplateUnit,xtemplateUnit,zdist]).
 			translate([xmin,y1,zmin]);
 	}			
 	for (var i=0; i<xnobs[1].length; i++) { 
 		xnobs[1][i] = xnobs[1][i].
-			scale([xdist/xtemplate.length,xdist/xtemplate.length,zdist]).
+			scale([xtemplateUnit,xtemplateUnit,zdist]).
 			translate([xmin,y1,zmin]); 
 	}	
+
+	var ztemplateUnit = zdist / ztemplate.length; 
+	var zgap = absGap / ztemplateUnit; 
+	var znobs = convertToNobs(ztemplate, zgap); 
+	
+	for (var i=0; i<znobs[0].length; i++) { 
+		znobs[0][i] = znobs[0][i].
+			rotateY(-90).
+            scale([-xdist,ztemplateUnit,ztemplateUnit]).
+			translate([xmin,y1,zmin]);
+	}			
+	for (var i=0; i<znobs[1].length; i++) { 
+		znobs[1][i] = znobs[1][i].
+            rotateY(-90).
+            scale([-xdist,ztemplateUnit,ztemplateUnit]).
+			translate([xmin,y1,zmin]); 
+	}	
+		
 	a = a.subtract(xnobs[0]); 
 	b = b.union(xnobs[1]); 
+
+	a = a.subtract(znobs[0]); 
+	b = b.union(znobs[1]);
 	
 	return [a,b];
 	
@@ -126,11 +146,24 @@ var testycut = function(segments, pctCut, absGap, xtemplate, ztemplate) {
 function main() { 
 	var segments = [ cube(50) ];
 	
-	var segments = testycut(segments, 0.5, 0.2, "#  # ##  /#\\ . /\\  \\#/ #", "      .      ");    
+	var segments = testycut(segments, 0.5, 0.2, "/#\\      /#\\", "/#\\      /#\\");    
 	
 	// Color everything	
 	for(var i=0; i<segments.length; i++) { 
 		segments[i] = segments[i].setColor(hsl2rgb(Math.random(),Math.random()*0.5+0.5,0.5)); 
+	}
+
+    // lay everything flat and plate on increasing x axis
+    var spacingx = 0; 
+    var spacing = 10; 
+    for(var i=0; i<segments.length; i++) { 
+        var item = segments[i];
+        item = item.lieFlat(); 
+        var bounds = item.getBounds(); 
+        item = item.translate([-bounds[0].x + spacingx,0,0]);
+        var bounds = item.getBounds(); 
+        spacingx = bounds[1].x + spacing;
+        segments[i] = item; 
 	}
 
     return segments; 
