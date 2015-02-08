@@ -1,10 +1,115 @@
 include('GG.twoD.jscad');
 include('GG.cuts.jscad');
 
+var txtTo3d = function() {
+	var _translations = {};
+	var _self = this; 
+	
+	this.setTranslation = function(ch, func) { 
+		// given a character ch, return a function that returns a solid from
+		// 0,0,0 to 1,1,N (N is up to you) 
+		_translations[ch] = func; 
+	};
+
+	this.convert = function(template, finalX, finalY, finalZ) {
+	
+	
+		var twoD = new GG.TwoD(); 
+		var x=0; 
+		var y=0; 
+		var segments = []; 
+		
+		// import template into twoD.  Could be moved to twoD
+		for(var i=0, len=template.length; i<len; i++) {
+			x++; 
+			var ch = template[i];
+			if (ch == '\n' || ch=='\r') { 
+				x = 0; 
+				y++; 
+			} else { 
+			   twoD.Set(x,y,ch); 
+			}
+		}
+
+		var xMax = twoD.GetXMax();
+		var yMax = twoD.GetYMax(); 
+
+		var tryBuckets = [];
+		for(x=1; x<xMax; x++) { 
+			for (y=1; y<yMax; y++) { 
+				tryBuckets.push([x,y]); 
+			}
+		}
+		tryBuckets.sort(
+			function(a,b) { 
+				return (b[0]*b[1]) - (a[0]*a[1]) 
+			} 
+		);
+		
+		// TODO: idea is to look for "groups" of things, like >, so can replace the whole thing with 
+		// a set of steps.   Only when we get steps, though. 
+		
+		for (var tbi=0; tbi<tryBuckets.length; tbi++) {
+			var dx = tryBuckets[tbi][0]; 
+			var dy = tryBuckets[tbi][1]; 
+			for (y=0; y<=twoD.GetYMax()-dy+1; y++) { 
+				for (x = 0; x <= twoD.GetXMax()-dx+1; x++) { 
+					var ch = twoD.Get(x,y); 
+					if (ch in _translations) { 
+						if (twoD.BlockEqual(x,y,dx,dy,ch)) { 
+							var s = _translations[ch] (); 
+							s = s.scale([dx,dy,1]).translate([x,y,0]); 
+							segments.push(s); 
+							twoD.BlockSet(x,y,dx,dy,undefined);	
+						}
+					}
+				}
+			} 
+		}
+		var floor = union(segments).mirroredY();  
+		console.log("floor", floor); 
+		var b = floor.getBounds(); 
+		var bx = b[1].x-b[0].x; 
+		var by = b[1].y-b[0].y; 
+		var bz = b[1].z-b[0].z;
+		if (bx < 1) bx = 1; 
+		if (by < 1) by = 1; 
+		if (bz < 1) bz = 1; 
+		floor = floor.translate([-b[0].x,-b[0].y,-b[0].z]);   // put it at 0,0,0
+		floor = floor.scale([finalX/bx,finalY/by,finalZ/bz]); // scale it to desired size
+		return floor;		
+	}
+	
+}; 
+
 function main() {
     
-    var segments=[]; 
-    var template=
+    var segments=[];    	
+	var t = new txtTo3d(); 
+			
+	// floor = 1 foot (joists and all)  
+	// window = 3 feet after floor, 4 feet of window
+	// door = 7 feet of door
+	// above door and window = 1 foot.
+	// grand total = 9 feet
+	
+	t.setTranslation('#',function() { return cube(1).scale([1,1,9]); }); 
+	t.setTranslation('.',function() { return cube(1); }); 
+	t.setTranslation('b',function() { return cube(1); }); 
+	t.setTranslation('d',function() { 
+		return union([
+			cube(1), 
+			cube(1).translate([0,0,8])
+		]); 
+	}); 
+	t.setTranslation('w',function()	{ 
+		return union([
+			cube({size: [1,1,4]}), 
+			cube(1).translate([0,0,8])
+		]); 
+	});
+
+	    var template=
 "##########################################         ######################################\n"+
 "#................#........#..............#         #......#.............................#\n"+
 "#................#........#..............#         #......b.............................#\n"+
@@ -33,7 +138,7 @@ function main() {
 "#........................................d.................d............................#\n"+
 "#........................................d.................d............................#\n"+
 "#........................................d.................d............................#\n"+
-"#........................................d.................############################## H\n"+
+"#........................................d.................##############################\n"+
 "#........................................d.................#............................#\n"+
 "#........................................d.................#............................#\n"+
 "#........................................d.................#............................#\n"+
@@ -61,97 +166,11 @@ function main() {
 "#........................................b.....#........................................#\n"+
 "#........................................b.....#........................................#\n"+
 "#........................................#.....#........................................#\n"+
-"#########################################################################################\n"+
-"                                       V"; ;
-   			 
-    var translate = new Object(); 
+"#########################################################################################";
 	
-	// floor = 1 foot (joists and all)  
-	// window = 3 feet after floor, 4 feet of window
-	// door = 7 feet of door
-	// above door and window = 1 foot.
-	
-	translate['#'] = function() { return cube(1).scale([1,1,9]); }; 
-	translate['.'] = function() { return cube(1); }; 
-	translate['b'] = function() { return cube(1); }; 
-	translate['d'] = function() { 
-		return union([
-			cube(1), 
-			cube(1).translate([0,0,8])
-		]); 
-	}; 
-	translate['w'] = function()	{ 
-		return union([
-			cube({size: [1,1,4]}), 
-			cube(1).translate([0,0,8])
-		]); 
-	};
-
-	var twoD = new GG.TwoD(); 
-    var x=0; 
-    var y=0; 
-    for(var i=0, len=template.length; i<len; i++) {
-        x++; 
-        var ch = template[i];
-        if (ch == '\n' || ch=='\r') { 
-            x = 0; 
-            y++; 
-		} else { 
-		   twoD.Set(x,y,ch); 
-		}
-	}
-	var xMax = twoD.GetXMax();
-	var yMax = twoD.GetYMax(); 
-
-	var tryBuckets = [];
-	for(x=1; x<xMax; x++) { 
-		for (y=1; y<yMax; y++) { 
-			tryBuckets.push([x,y]); 
-		}
-	}
-	tryBuckets.sort(
-		function(a,b) { 
-			return (b[0]*b[1]) - (a[0]*a[1]) 
-		} 
-	);
-	
-	// TODO: idea is to look for "groups" of things, like >, so can replace the whole thing with 
-	// a set of steps.   Only when we get steps, though. 
-	
-	for (var tbi=0; tbi<tryBuckets.length; tbi++) {
-		var dx = tryBuckets[tbi][0]; 
-		var dy = tryBuckets[tbi][1]; 
-		for (y=0; y<=twoD.GetYMax()-dy; y++) { 
-			for (x = 0; x < twoD.GetXMax()-dx; x++) { 
-				var ch = twoD.Get(x,y); 
-				if (ch in translate) { 
-					if (twoD.BlockEqual(x,y,dx,dy,ch)) { 
-						var s = translate[ch] (); 
-						s = s.scale([dx,dy,1]).translate([x,y,0]); 
-						segments.push(s); 
-						twoD.BlockSet(x,y,dx,dy,undefined);	
-					}
-				}
-			}
-		} 
-	}
-	
-
-	var floor = union(segments);  
-	var b = floor.getBounds(); 
-	floor.translate([b[0].x,b[0].y,b[0].z]); 
-	
-	segments = [ floor ]; 
-
-	// Final polish.  Set scale
-	var scale=48; 
-	var feetTomm=304.8; 
-	var finalX = (30 * feetTomm)/scale;   
-	var finalY = (20 * feetTomm)/scale;   
-	var finalZ = (8 * feetTomm)/scale; 
-	for (var i=0; i<segments.length; i++) { 
-		segments[i] = segments[i].mirroredY().scale([finalX/xMax, finalY/yMax, finalZ/10]); 
-	}
+	var s = (304.8)/48;   // 304.8 mm per feet, at 1/48 scale
+	var floor4 = t.convert(template, 30*s, 20*s, 9*s); 
+	var segments = [floor4]; 
 	
 	GG.randomColor(segments); 
 
