@@ -153,30 +153,7 @@ function main() {
 		segments[i] = segments[i].mirroredY().scale([finalX/xMax, finalY/yMax, finalZ/10]); 
 	}
 	
-	// Do some cutting with nobbies
-	segments = GG.zcut(segments,0.3,0.9," N              N "); 
-	segments = GG.xcut(segments,0.4,0.9," N              N "); 
-	segments = GG.ycut(segments,0.8,0.9," N              N "); 
-	
-	
-	// add in some scale things. my bed handles about 130mm cubed
-	segments.push( cube(1).scale([130,2,3]).translate([0,15,-15]) ); 
-	segments.push( cube(1).scale([1,-130,3]).translate([-15,0,-15]) ); 
-	segments.push( cube(1).scale([1,2,130]).translate([-15,15,0]) ); 
-	
-	// Color everything	
-	for(var i=0; i<segments.length; i++) { 
-		segments[i] = segments[i].setColor(hsl2rgb(Math.random(),Math.random()*0.5+0.5,0.5)); 
-	}
-	
-	return segments;
-	
-	// TODO: find a way to lay the objects out.  Probably want to flip the top pieces over. 
-	
-	// Convert to multi-part format -- THIS DOES NOT WORK
-	//var newsegments = []; 
-	//for (var i=0; i<segments.length; i++) { 
-	//	newsegments.push({ name: "A"+i, caption: "A"+i, data: segments[i]});
-	//}
-	//return newsegments; 
+	GG.randomColor(segments); 
+
+	return segments; 
 }
