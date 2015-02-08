@@ -24,15 +24,18 @@ function basic_cuts_test_1() {
 function empty_box_cuts_test() { 
 	// this is closer to how 3d model of a house would be cut
 	
-	var box = cube(50).subtract(cube(40).translate([3,4,5]));   // 5mm hollow
+	var box = cube(50).subtract(cube(40).translate([3,4,10]));   // 5mm hollow
 	var segments = [box]; 
+
+    var floorcut = " # #   # # "; 
+	var wallvertical = " ,  , "; 
+	var wallhorizontal = "  /#\\  /#\\  "; 
+	var cut1 = "  \\#/       \\#/  "; 
+	var cut2 = " ,   , "; 
 	
-	var cut1 = "    \\#/   \\#/   "; 
-	var cut2 = "   ,      ,    "; 
-	
-	segments = GG.ycut(segments, 0.5, 0.5, cut1, cut2); 
-	segments = GG.xcut(segments, 0.5, 0.5, " "+cut1, " "+cut2); 
-	segments = GG.zcut(segments, 0.5, 0.5, "  "+cut1, "  "+cut2); 
+	segments = GG.ycut(segments, 0.5, 0.3, floorcut, wallvertical); 
+	segments = GG.xcut(segments, 0.5, 0.3, floorcut, wallvertical); 
+	segments = GG.zcut(segments, 0.5, 0.3, wallhorizontal, wallhorizontal); 
 
 	
 	GG.randomColor(segments); 

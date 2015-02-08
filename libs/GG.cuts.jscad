@@ -59,7 +59,7 @@ GG.convertToNobs = function(template, gap) {
     			inner = polygon([[leftx,0],[leftx,topy],[rightx,0]]);
             }
         }
-		
+				
         if (outer && inner) {
             
             outer = linear_extrude({height: 1}, outer);
