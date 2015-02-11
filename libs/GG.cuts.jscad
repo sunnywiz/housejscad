@@ -156,33 +156,35 @@ GG.ycut = function(segments, pctCut, absGap, xtemplate, ztemplate) {
 };
 
 GG.xcut = function(segments, pctCut, absGap, ytemplate, ztemplate) { 
-	var u = union(segments); 
-	var bounds = u.getBounds(); 
+
+	// rotateZ(90):  X to Y to -X to -Y to X
+	// so follow up with scale( -1, 1, 1)
+
 	var rotsegments = []; 
 	for (var i=0; i< segments.length; i++) { 
-		rotsegments.push(segments[i].translate([-bounds[0].x, -bounds[0].y, -bounds[0].z]).rotateZ(90)); 
+		rotsegments.push(segments[i].rotateZ(90).scale([-1,1,1])); 
 	}
 	rotsegments = GG.ycut(rotsegments, pctCut, absGap, ytemplate,ztemplate); 
 	var newsegments = []; 
 	for (var i=0; i< rotsegments.length; i++) { 
-		newsegments.push(rotsegments[i].rotateZ(-90).translate([bounds[0].x, bounds[0].y,bounds[0].z])); 
+		newsegments.push(rotsegments[i].scale([-1,1,1]).rotateZ(-90)); 
 	}
 	return newsegments; 
 };
 
 GG.zcut = function(segments, pctCut, absGap, xtemplate, ytemplate) { 
-	var u = union(segments); 
-	var bounds = u.getBounds(); 
+
 	var rotsegments = []; 
 	for (var i=0; i< segments.length; i++) { 
-		rotsegments.push(segments[i].translate([-bounds[0].x, -bounds[0].y, -bounds[0].z]).rotateX(90)); 
+		rotsegments.push(segments[i].rotateX(90).scale([1,-1,1])); 
 	}
 	rotsegments = GG.ycut(rotsegments, pctCut, absGap, xtemplate,ytemplate); 
 	var newsegments = []; 
 	for (var i=0; i< rotsegments.length; i++) { 
-		newsegments.push(rotsegments[i].rotateX(-90).translate([bounds[0].x, bounds[0].y,bounds[0].z])); 
+		newsegments.push(rotsegments[i].scale([1,-1,1]).rotateX(-90)); 
 	}
 	return newsegments; 
+ 
 };
 
 GG.plate = function(segments,xlim,spacing) { 

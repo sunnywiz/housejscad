@@ -65,7 +65,7 @@ function join_test_2() {
 
 function main() { 
 
-	// return basic_cuts_test_1(); 
+	return basic_cuts_test_1(); 
 	// return empty_box_cuts_test();
 
 	// return join_test_1();
