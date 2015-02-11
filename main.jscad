@@ -28,7 +28,7 @@ function main() {
 		]); 
 	});
 
-	    var template=
+	    var template4=
 "##########################################         ######################################\n"+
 "#................#........#..............#         #......#.............................#\n"+
 "#................#........#..............#         #......b.............................#\n"+
@@ -88,9 +88,58 @@ function main() {
 "#########################################################################################";
 	
 	var s = (304.8)/48;   // 304.8 mm per feet, at 1/48 scale
-	var floor4 = t.convert(template, 30*s, 20*s, 9*s); 
-	var segments = [floor4]; 
 	
+	// result of convert is [0,0]..[+x,+y,+z] 
+	
+	var basement = t.convert(template4,30,20,9); // cube({size:[30,20,9]});
+	var family = t.convert(template4,30,20,9); //cube({size:[30,20,9]});
+	var kitchen = t.convert(template4,30,20,9); //cube({size:[30,20,9]});
+	var bedrooms = t.convert(template4, 30, 20, 9);
+	var garage = cube({size:[30,40,9]});
+	
+	// move them into position
+	
+	// basement does not move: at 0,0
+	// family room is up and to the right of basement
+	family = family.translate([0,-30,4]);
+	var underfamily = cube({size:[30,20,4]}).translate([0,-30,0]); 
+
+	// kitchen is directly above basement
+	kitchen = kitchen.translate([0,0,9+10]); // joist should intersect ceiling
+	
+	// bedrooms are above family
+	bedrooms = bedrooms.translate([0,-30,4+9+10]); 
+	
+	// garage goes next to family
+	garage = garage.translate([0,-80,4]); 
+	var undergarage = cube({size:[30,40,4]}).translate([0,-80,0]); 
+
+	//       0        1         2         3         4         5         6
+	//  t1= "123456789012345678901234567890123456789012345678901234567890
+	var t20="          /#\\               /#\\         "; 
+	var t30="                   /#\\                   /#\\                "; 
+	var t9 ="    /#\\    "; 
+	
+	// vertical things -- NO, makes it hard to print
+	// var a = GG.joinZ(basement,kitchen,0.5,t30,t20); 
+	// basement=a[0]; kitchen=a[1]; 
+	// a = GG.joinZ(family, bedrooms,0.5,t30,t20); 
+	// family = a[0]; bedrooms=a[1]; 
+	
+	// horizontal
+	a = GG.joinY(family,basement,0.25,t30,t9); 
+	family = a[0]; basement = a[1]; 
+	
+	//a = GG.joinY(family,kitchen,0.25,t30,t9); 
+	//family = a[0]; kitchen=a[1]; 
+	
+	a = GG.joinY(bedrooms,kitchen,0.25,t30,t9); 
+	bedrooms=a[0]; kitchen=a[1]; 
+	
+	a = GG.joinY(garage,family,0.25,t30,t20); 
+	garage=a[0]; family=a[1]; 
+	
+	var segments = [ basement, underfamily, family, kitchen, bedrooms, undergarage,garage ]; 
 	GG.randomColor(segments); 
 
 	return segments; 

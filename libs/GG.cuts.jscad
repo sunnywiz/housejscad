@@ -231,7 +231,7 @@ GG.randomColor = function(segments) {
 
 GG.joinZ = function(a, b, depth, templateX, templateY) { 
 
-	// a and b do not need to touch
+	// a and b do not need to touch. 
 	// TOP (+z) of A gets added to; BOTTOM (-z) of b gets removed from
 	// depth is the positive depth of the joining nubbies
 	// templateX and templateY are the two templates used
