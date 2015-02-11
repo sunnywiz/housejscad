@@ -258,7 +258,7 @@ var templatekitchen =
 
 	var family = t.convert(templatefamily,28,20,9); 
 	var bedrooms = t.convert(templatebedrooms, 30, 20, 9);
-	var garage = cube({size:[28,40,9]});
+	var garage = cube({size:[21,40,9]});
 	
 	// move them into position.  make it so that max y = 0, and goes lower from there
 
@@ -274,7 +274,7 @@ var templatekitchen =
 	
 	// garage goes next to family
 	garage = garage.translate([0,-(40+17+20),4]); 
-	var undergarage = cube({size:[20,40,4]}).translate([0,-(40+17+20),0]); 
+	var undergarage = cube({size:[21,40,4]}).translate([0,-(40+17+20),0]); 
 
 	//       0        1         2         3         4         5         6
 	//  t1= "123456789012345678901234567890123456789012345678901234567890
