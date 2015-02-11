@@ -16,7 +16,6 @@ GG.txtTo3d = function() {
 
 	this.convert = function(template, finalX, finalY, finalZ) {
 	
-	
 		var twoD = new GG.TwoD(); 
 		var x=0; 
 		var y=0; 

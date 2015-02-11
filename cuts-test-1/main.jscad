@@ -45,64 +45,22 @@ function empty_box_cuts_test() {
 	
 }
 
-function joinZ(a, b, absgap, templateX, templateY) { 
-	// Given two shapes a and b, which intersect in the Z-direction, 
-	// does some template cutting using the two templates 
-	var c = intersection(a,b);
-	var bounds = c.getBounds(); 
-	var xsize = bounds[1].x - bounds[0].x; 
-	var ysize = bounds[1].y - bounds[0].y; 
-	var zsize = bounds[1].z - bounds[0].z; 
-	if (xsize == 0 || ysize==0 || zsize==0) { 
-		// no intersection
-		return [a,b];  // no changes
-	}
-	var nibbleX = GG.convertToNobs(templateX,0.2);
-	var nibbleY = GG.convertToNobs(templateY,0.2);
-	var l; 
-	
-	var l = templateX.length; 
-	for (var i=0; i<nibbleX[0].length; i++) { 
-		var r = nibbleX[0][i].rotateX(90); 
-		r = r.scale([xsize/l,-ysize,zsize]);
-		r = r.translate([bounds[0].x,bounds[0].y,bounds[1].z]); 
-		nibbleX[0][i] = r; 
-	}
-	for (var i=0; i<nibbleX[1].length; i++) { 
-		var r = nibbleX[1][i].rotateX(90); 
-		r = r.scale([xsize/l,-ysize,zsize]);
-		r = r.translate([bounds[0].x,bounds[0].y,bounds[1].z]); 
-		nibbleX[1][i] = r; 
-	} 
-	
-	l = templateY.length; 
-	for (var i=0; i<nibbleY[0].length; i++) { 
-		var r = nibbleY[0][i].rotateX(90).rotateZ(90); 
-		r = r.scale([xsize,ysize/l,zsize]);
-		r = r.translate([bounds[0].x,bounds[0].y,bounds[1].z]); 
-		nibbleY[0][i] = r; 
-	}
-	for (var i=0; i<nibbleY[1].length; i++) { 
-		var r = nibbleY[1][i].rotateX(90).rotateZ(90); 
-		r = r.scale([xsize,ysize/l,zsize]);
-		r = r.translate([bounds[0].x,bounds[0].y,bounds[1].z]); 
-		nibbleY[1][i] = r; 
-	}
-	
-    var a1 = a.subtract(nibbleX[0]).subtract(nibbleY[0]);
-	var b1 = b.subtract(c).union(nibbleX[1]).union(nibbleY[1]); 
-    return [a1,b1]; 
-}
-
 function join_test_1() { 
-	var a = cube({size:[50,50,20], round: true});
-	var b = cube({size:[40,40,20], round: true}).translate([0,0,17]);
+	var a = cube({size:[50,50,20], round: false});
+	var b = cube({size:[40,40,20], round: false}).translate([0,0,30]);
 	
-	var a1 = joinZ(a,b,0.4,"   /#\\    /#\\   ", "   /#\\    /#\\   ");   // returns [ new a, new b ]
-	a1[1] = a1[1].rotateX(180);
-	a1 = GG.plate(a1, 130, 2); 
+	var a1 = GG.joinZ(a,b,5,"   /#\\    /#\\   ", "   /#\\    /#\\   ");   // returns [ new a, new b ]
+	// a1[1] = a1[1].rotateX(180);
+	// a1 = GG.plate(a1, 130, 2); 
 	a1 = GG.randomColor(a1); 
 	return a1; 
+}
+
+function join_test_2() { 
+	var a = cube({size:[50,50,50], round: true});
+	var b = cube({size:[40,40,40], round: true}).translate([0,60,0]);
+
+	return GG.randomColor(GG.joinY(a,b,5,"    #    ", "     #     ")); 
 }
 
 function main() { 
@@ -110,7 +68,8 @@ function main() {
 	// return basic_cuts_test_1(); 
 	// return empty_box_cuts_test();
 
-	return join_test_1(); 
-	
+	// return join_test_1();
+	// return join_test_2(); 
+
 }
 
