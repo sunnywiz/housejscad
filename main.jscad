@@ -12,25 +12,35 @@ function main() {
 	// above door and window = 1 foot.
 	// grand total = 9 feet
 	
-	t.setTranslation('#',function() { return cube(1).scale([1,1,9]); }); 
-	t.setTranslation('.',function() { return cube(1); }); 
-	t.setTranslation('b',function() { return cube(1); }); 
+	t.setTranslation('#',function() { return cube(1).scale([1,1,10]); }); 
+	t.setTranslation('.',function() { 
+		return union([
+			cube(1),
+			cube(1).translate([0,0,9])
+		]);
+	}); 
+	t.setTranslation('b',function() { 		
+		return union([
+			cube(1),
+			cube(1).translate([0,0,9])
+		]);
+	}); 
 	t.setTranslation('d',function() { 
 		return union([
 			cube(1), 
-			cube(1).translate([0,0,8])
+			cube(1).scale([1,1,2]).translate([0,0,8])
 		]); 
 	}); 
 	t.setTranslation('w',function()	{ 
 		return union([
 			cube({size: [1,1,4]}), 
-			cube(1).translate([0,0,8])
+			cube(1).scale([1,1,2]).translate([0,0,8])
 		]); 
 	});
 	t.setTranslation('^',function() { 
 		return union([
 			cube({size: [1,1,7]}), 
-			cube(1).translate([0,0,8])
+			cube(1).scale([1,1,2]).translate([0,0,8])
 		]); 
 	}); 
 
@@ -75,13 +85,13 @@ var templatebasement =
 "##................................#...........................................^^\n"+
 "##................................#...........................................^^\n"+
 "##................................#...........................................##\n"+
-"##................................#        ...................................##\n"+
-"##................................#        ...................................##\n"+
-"##................................#        ...................................##\n"+
-"##................................#        ...................................##\n"+
-"##................................#        ...................................##\n"+
-"##................................#        ...................................##\n"+
-"###################################        ...........##########################\n";
+"##................................#...........................................##\n"+
+"##................................#...........................................##\n"+
+"##................................#...........................................##\n"+
+"##................................#...........................................##\n"+
+"##................................#...........................................##\n"+
+"##................................#...........................................##\n"+
+"###################################...................##########################\n";
 
 
 var templatefamily = 
@@ -248,9 +258,7 @@ var templatekitchen =
 "#.......................................b.....#.......................................#\n"+
 "#.......................................#.....#.......................................#\n"+
 "#######################################################################################";
-	
-	var s = (304.8)/48;   // 304.8 mm per feet, at 1/48 scale
-	
+		
 	// result of convert is [0,0]..[+x,+y,+z] 
 	
 	var basement = t.convert(templatebasement,28,17,9); 
@@ -258,7 +266,7 @@ var templatekitchen =
 
 	var family = t.convert(templatefamily,28,20,9); 
 	var bedrooms = t.convert(templatebedrooms, 30, 20, 9);
-	var garage = cube({size:[21,40,9]});
+	// var garage = cube({size:[21,40,9]});
 	
 	// move them into position.  make it so that max y = 0, and goes lower from there
 
@@ -273,8 +281,8 @@ var templatekitchen =
 	bedrooms = bedrooms.translate([-2,-(20+17),4+9]); 
 	
 	// garage goes next to family
-	garage = garage.translate([0,-(40+17+20),4]); 
-	var undergarage = cube({size:[21,40,4]}).translate([0,-(40+17+20),0]); 
+	// garage = garage.translate([0,-(40+17+20),4]); 
+	// var undergarage = cube({size:[21,40,4]}).translate([0,-(40+17+20),0]); 
 
 	//       0        1         2         3         4         5         6
 	//  t1= "123456789012345678901234567890123456789012345678901234567890
@@ -283,10 +291,10 @@ var templatekitchen =
 	var t9 ="    /#\\    "; 
 	
 	// vertical things -- NO, makes it hard to print
-	// var a = GG.joinZ(basement,kitchen,0.5,t30,t20); 
-	// basement=a[0]; kitchen=a[1]; 
-	// a = GG.joinZ(family, bedrooms,0.5,t30,t20); 
-	// family = a[0]; bedrooms=a[1]; 
+	var a = GG.joinZ(basement,kitchen,0.5,t30,t20); 
+	basement=a[0]; kitchen=a[1]; 
+	a = GG.joinZ(family, bedrooms,0.5,t30,t20); 
+	family = a[0]; bedrooms=a[1]; 
 	
 	// horizontal
 	a = GG.joinY(family,basement,0.25,t30,t9); 
@@ -298,11 +306,56 @@ var templatekitchen =
 	a = GG.joinY(bedrooms,kitchen,0.25,t30,t9); 
 	bedrooms=a[0]; kitchen=a[1]; 
 	
-	a = GG.joinY(garage,family,0.25,t30,t20); 
-	garage=a[0]; family=a[1]; 
-	
-	var segments = [ basement, underfamily, family, kitchen, bedrooms, undergarage,garage ]; 
-	GG.randomColor(segments); 
+	// a = GG.joinY(garage,family,0.25,t30,t20); 
+	// garage=a[0]; family=a[1]; 
 
+	// Up till now we were doing things in feet and positioning them. 
+	// Now relocate everything to millimeters at appropriate scale
+	var s = (304.8)/48;   // 304.8 mm per feet, at 1/48 scale
+	basement = basement.scale([s,s,s]).setColor([0,0,1]); 
+	family = family.scale([s,s,s]).setColor([0,1,0]); 
+	kitchen = kitchen.scale([s,s,s]).setColor([1,1,0]); 
+	bedrooms = bedrooms.scale([s,s,s]).setColor([0,1,1]); 
+	underfamily = underfamily.scale([s,s,s]).setColor([0.5,0.5,0,5]); 
+	// undergarage = undergarage.scale([s,s,s]); 
+	// garage      = garage.scale([s,s,s]); 
+	
+	
+	// now cut things top to bottom so that we can lift the roofs off .  At this point
+	// they become arrays. 
+	var ztemplate="                      /######################\\                   ";   
+	basement = GG.zcut([basement],0.75,0.5,ztemplate,ztemplate);  
+	family   = GG.zcut([family],0.7,0.5,ztemplate,ztemplate); 	
+	kitchen  = GG.zcut([kitchen],0.7,0.5,ztemplate,ztemplate); 
+	bedrooms = GG.zcut([bedrooms],0.7,0.5,ztemplate,ztemplate); 
+	
+	// now cut things on the X axis so that they fit on the print bed
+	var checkerboard = "     ##     ##     ##     "; 
+	basement = GG.xcut(basement, 0.5, 0.5, checkerboard," "); 
+	family = GG.xcut(family, 0.6, 0.5, checkerboard," "); 
+	kitchen = GG.xcut(kitchen, 0.5, 0.5, checkerboard," "); 
+	bedrooms = GG.xcut(bedrooms, 0.6, 0.5, checkerboard," "); 
+	underfamily = GG.xcut([underfamily],0.5,0.5,checkerboard," "); 
+	
+	// put everything together
+	
+	segments = [];  // [cube(1).scale([130,130,50]).translate([-130,0,0])];  // print bed size
+	segments = segments.
+		concat(basement).
+		concat(underfamily).
+		concat(family).
+		concat(kitchen).
+		concat(bedrooms);
+		// concat(undergarage).
+		// concat(garage); 
+
+	// explode everything so we can inspect
+	//for (var i=0; i<segments.length; i++) { 
+	//	var b= segments[i].getBounds(); 
+	//	segments[i] = segments[i].translate([b[0].x,b[0].y,b[0].z]);
+	//}
+	
+	segments = GG.plate(segments, 130, 5); 
+	
 	return segments; 
 }

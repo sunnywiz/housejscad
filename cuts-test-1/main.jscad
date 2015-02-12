@@ -63,13 +63,27 @@ function join_test_2() {
 	return GG.randomColor(GG.joinY(a,b,5,"    #    ", "     #     ")); 
 }
 
+function join_test_3() { 
+
+	// right now this shows the problem I have;  
+
+	var a = cube({size:[50,50,50], round: false}); 
+	var b = cube({size:[40,40,50], round: false}); 
+	var a = a.subtract(b.translate([5,5,5])); 
+	var c = cube({size:[40,40,40], round: false}).translate([0,0,60]); 
+	
+	return GG.randomColor(GG.joinZ(a,c,5,"   #   #   #   ", "   #   #   #   ")); 
+
+	// i'd rather the top of the cutout cube NOT have a "roof" pattern. 
+}
+
 function main() { 
 
-	return basic_cuts_test_1(); 
+	// return basic_cuts_test_1(); 
 	// return empty_box_cuts_test();
 
 	// return join_test_1();
 	// return join_test_2(); 
-
+    return join_test_3(); 
 }
 

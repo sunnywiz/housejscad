@@ -229,6 +229,13 @@ GG.randomColor = function(segments) {
 	return segments; 
 }
 
+GG.plannedColor = function(segments) { 
+	for(var i=0; i<segments.length; i++) { 
+		segments[i] = segments[i].setColor(hsl2rgb(i/segments.length,1,0.5)); 
+	} 
+	return segments; 
+} 
+
 GG.joinZ = function(a, b, depth, templateX, templateY) { 
 
 	// a and b do not need to touch. 
