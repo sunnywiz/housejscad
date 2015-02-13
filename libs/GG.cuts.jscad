@@ -156,33 +156,35 @@ GG.ycut = function(segments, pctCut, absGap, xtemplate, ztemplate) {
 };
 
 GG.xcut = function(segments, pctCut, absGap, ytemplate, ztemplate) { 
-	var u = union(segments); 
-	var bounds = u.getBounds(); 
+
+	// rotateZ(90):  X to Y to -X to -Y to X
+	// so follow up with scale( -1, 1, 1)
+
 	var rotsegments = []; 
 	for (var i=0; i< segments.length; i++) { 
-		rotsegments.push(segments[i].translate([-bounds[0].x, -bounds[0].y, -bounds[0].z]).rotateZ(90)); 
+		rotsegments.push(segments[i].rotateZ(90).scale([-1,1,1])); 
 	}
 	rotsegments = GG.ycut(rotsegments, pctCut, absGap, ytemplate,ztemplate); 
 	var newsegments = []; 
 	for (var i=0; i< rotsegments.length; i++) { 
-		newsegments.push(rotsegments[i].rotateZ(-90).translate([bounds[0].x, bounds[0].y,bounds[0].z])); 
+		newsegments.push(rotsegments[i].scale([-1,1,1]).rotateZ(-90)); 
 	}
 	return newsegments; 
 };
 
 GG.zcut = function(segments, pctCut, absGap, xtemplate, ytemplate) { 
-	var u = union(segments); 
-	var bounds = u.getBounds(); 
+
 	var rotsegments = []; 
 	for (var i=0; i< segments.length; i++) { 
-		rotsegments.push(segments[i].translate([-bounds[0].x, -bounds[0].y, -bounds[0].z]).rotateX(90)); 
+		rotsegments.push(segments[i].rotateX(90).scale([1,-1,1])); 
 	}
 	rotsegments = GG.ycut(rotsegments, pctCut, absGap, xtemplate,ytemplate); 
 	var newsegments = []; 
 	for (var i=0; i< rotsegments.length; i++) { 
-		newsegments.push(rotsegments[i].rotateX(-90).translate([bounds[0].x, bounds[0].y,bounds[0].z])); 
+		newsegments.push(rotsegments[i].scale([1,-1,1]).rotateX(-90)); 
 	}
 	return newsegments; 
+ 
 };
 
 GG.plate = function(segments,xlim,spacing) { 
@@ -225,4 +227,91 @@ GG.randomColor = function(segments) {
 		segments[i] = segments[i].setColor(hsl2rgb(Math.random(),Math.random()*0.5+0.5,0.5)); 
 	} 
 	return segments; 
+}
+
+GG.plannedColor = function(segments) { 
+	for(var i=0; i<segments.length; i++) { 
+		segments[i] = segments[i].setColor(hsl2rgb(i/segments.length,1,0.5)); 
+	} 
+	return segments; 
+} 
+
+GG.joinZ = function(a, b, depth, templateX, templateY) { 
+
+	// a and b do not need to touch. 
+	// TOP (+z) of A gets added to; BOTTOM (-z) of b gets removed from
+	// depth is the positive depth of the joining nubbies
+	// templateX and templateY are the two templates used
+
+	if (depth <= 0) throw "must be a positive depth"; 
+
+	var abounds = a.getBounds();  
+	var bbounds = b.getBounds();  
+	
+	var translatez = (abounds[1].z-bbounds[0].z); 
+	var b2 = b.translate([0,0,translatez-depth]);  // "gouged out" 
+    var b3 = b.translate([0,0,translatez]);    // "just touching"
+	var c = a.intersect(b2); 
+	var cbounds = c.getBounds(); 
+	if (cbounds[0].z == cbounds[1].z) return [a,b];  // no intersection. 
+	
+	var xsize = cbounds[1].x - cbounds[0].x;  
+	var ysize = cbounds[1].y - cbounds[0].y; 
+	var zmin = cbounds[0].z; 
+	
+	var nibbleX = GG.convertToNobs(templateX,0.2); // 0 = to remove, 1 = to add
+	var nibbleY = GG.convertToNobs(templateY,0.2);
+	var l; 
+	
+	var l = templateX.length; 
+	for (var i=0; i<nibbleX[0].length; i++) { 
+		var r = nibbleX[0][i].rotateX(90); 
+		r = r.scale([xsize/l,-ysize,-depth]);
+		r = r.translate([cbounds[0].x, cbounds[0].y,zmin-translatez+depth]); 
+		nibbleX[0][i] = r; 
+	}
+	for (var i=0; i<nibbleX[1].length; i++) { 
+		var r = nibbleX[1][i].rotateX(90); 
+		r = r.scale([xsize/l,-ysize,-depth]);
+		r = r.translate([cbounds[0].x,cbounds[0].y,zmin+depth]); 
+		nibbleX[1][i] = r; 
+	} 
+	
+	l = templateY.length; 
+	for (var i=0; i<nibbleY[0].length; i++) { 
+		var r = nibbleY[0][i].rotateX(90).rotateZ(90); 
+		r = r.scale([xsize,ysize/l,-depth]);
+		r = r.translate([cbounds[0].x,cbounds[0].y,zmin-translatez+depth]); 
+		nibbleY[0][i] = r; 
+	}
+	for (var i=0; i<nibbleY[1].length; i++) { 
+		var r = nibbleY[1][i].rotateX(90).rotateZ(90); 
+		r = r.scale([xsize,ysize/l,-depth]);
+		r = r.translate([cbounds[0].x,cbounds[0].y,zmin+depth]); 
+		nibbleY[1][i] = r; 
+	}
+
+	// additive
+	var u1 = union(nibbleX[1]);  
+	var u2 = union(nibbleY[1]);  
+	var u3 = union(u1,u2);       
+	var i1 = b3.intersect(u3);  
+	var a2 = a.union(i1);    
+	
+	// subtractive
+	var b4 = b.subtract(nibbleX[0]).subtract(nibbleY[0]); 
+	
+	return [a2,b4];	
+}
+
+GG.joinY = function(a, b, depth, templateX, templateZ) { 
+	// transform Y=>Z, Z=>X leaving X the same
+	// rotateX is +Y => +Z; +Z=>-Y; -Y=>-Z; -Z=>+Y; 
+	// so rotateX(90) Y,Z => Z,-Y, so then scale by [1,-1,1]
+	var a1 = a.rotateX(90).scale([1,-1,1]); 
+	var b1 = b.rotateX(90).scale([1,-1,1]); 
+	var result = GG.joinZ(a1,b1,depth,templateX,templateZ); 
+	var a2 = result[0].scale([1,-1,1]).rotateX(-90); 
+	var b2 = result[1].scale([1,-1,1]).rotateX(-90); 
+	return [a2,b2]; 
 }
