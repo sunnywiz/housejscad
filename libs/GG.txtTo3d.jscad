@@ -83,3 +83,42 @@ GG.txtTo3d = function() {
 	}
 	
 }; 
+
+GG.steps = function(numSteps) { 
+	// result: 1x1x1 cube with steps carved in
+	// 0,0,0 is lowest
+	// 1,1,1 is highest
+	// steps are along the X axis
+	// rising up the +Z along the +Y axis
+	
+	// steps = 1:   cube
+	// steps = 2:    #
+	//              #/
+	// steps = 3:         #
+	//                   #/ +Z
+	//                  #/
+	//                  +Y
+	
+	// ie, the "top" step is the same level as the desired whatever is. 
+
+	var segments = []; 
+	// build
+	for (var i=0; i<numSteps; i++) { 
+		var step = cube(1).scale([1,1,i+1]).translate([0,i,0]); 
+		segments.push(step); 
+	}
+
+	var steps = union(segments); 
+
+	// carve out the bottom
+	if (numSteps>1) { 
+		var carve = polygon([[1.5,0],[numSteps,numSteps-1.5],[numSteps,0]]); 
+		var carve2 = linear_extrude({height:1},carve);
+		carve2 = carve2.rotateX(90); 
+		carve2 = carve2.rotateZ(90); 
+		steps = steps.subtract(carve2); 
+	}
+		
+	var b = steps.getBounds(); 
+	return steps.scale([1/b[1].x, 1/b[1].y, 1/b[1].z]); 
+}

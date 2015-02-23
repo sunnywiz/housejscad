@@ -12,35 +12,29 @@ function main() {
 	// above door and window = 1 foot.
 	// grand total = 9 feet
 	
-	t.setTranslation('#',function() { return cube(1).scale([1,1,10]); }); 
+	t.setTranslation('#',function() { return cube(1).scale([1,1,9]); }); 
 	t.setTranslation('.',function() { 
-		return union([
-			cube(1),
-			cube(1).translate([0,0,9])
-		]);
+		return cube(1);
 	}); 
 	t.setTranslation('b',function() { 		
-		return union([
-			cube(1),
-			cube(1).translate([0,0,9])
-		]);
+		return cube(1);
 	}); 
 	t.setTranslation('d',function() { 
 		return union([
 			cube(1), 
-			cube(1).scale([1,1,2]).translate([0,0,8])
+			cube(1).translate([0,0,8])
 		]); 
 	}); 
 	t.setTranslation('w',function()	{ 
 		return union([
 			cube({size: [1,1,4]}), 
-			cube(1).scale([1,1,2]).translate([0,0,8])
+			cube(1).translate([0,0,8])
 		]); 
 	});
 	t.setTranslation('^',function() { 
 		return union([
 			cube({size: [1,1,7]}), 
-			cube(1).scale([1,1,2]).translate([0,0,8])
+			cube(1).translate([0,0,8])
 		]); 
 	}); 
 
@@ -291,10 +285,20 @@ var templatekitchen =
 	var t9 ="    /#\\    "; 
 	
 	// vertical things -- NO, makes it hard to print
+	// however, it does give a place for contraction to happen
+	
 	var a = GG.joinZ(basement,kitchen,0.5,t30,t20); 
-	basement=a[0]; kitchen=a[1]; 
+	// basement=a[0]; don't save the tops
+	kitchen=a[1]; 
 	a = GG.joinZ(family, bedrooms,0.5,t30,t20); 
-	family = a[0]; bedrooms=a[1]; 
+	// family = a[0];  don't save the tops
+	bedrooms=a[1];
+	// do additional "gouging"
+	var reallybig = cube(1).scale([5000,5000,10]).translate([-2500,-2500,0]); 
+	a = GG.joinZ(reallybig,basement, 0.5, t30, t20); 
+	basement = a[1]; 
+	a = GG.joinZ(reallybig,family, 0.5, t30, t20); 
+	family = a[1]; 
 	
 	// horizontal
 	a = GG.joinY(family,basement,0.25,t30,t9); 
@@ -323,18 +327,17 @@ var templatekitchen =
 	
 	// now cut things top to bottom so that we can lift the roofs off .  At this point
 	// they become arrays. 
-	var ztemplate="                      /######################\\                   ";   
-	basement = GG.zcut([basement],0.75,0.5,ztemplate,ztemplate);  
-	family   = GG.zcut([family],0.7,0.5,ztemplate,ztemplate); 	
-	kitchen  = GG.zcut([kitchen],0.7,0.5,ztemplate,ztemplate); 
-	bedrooms = GG.zcut([bedrooms],0.7,0.5,ztemplate,ztemplate); 
+	var checkerboard = "     ##     ##     ##     "; 
+	basement = GG.zcut([basement],0.85,0.5,checkerboard,checkerboard);  
+	family   = GG.zcut([family],0.85,0.5,checkerboard,checkerboard); 	
+	kitchen  = GG.zcut([kitchen],0.85,0.5,checkerboard,checkerboard); 
+	bedrooms = GG.zcut([bedrooms],0.85,0.5,checkerboard,checkerboard); 
 	
 	// now cut things on the X axis so that they fit on the print bed
-	var checkerboard = "     ##     ##     ##     "; 
 	basement = GG.xcut(basement, 0.5, 0.5, checkerboard," "); 
-	family = GG.xcut(family, 0.6, 0.5, checkerboard," "); 
+	family = GG.xcut(family, 0.4, 0.5, checkerboard," "); 
 	kitchen = GG.xcut(kitchen, 0.5, 0.5, checkerboard," "); 
-	bedrooms = GG.xcut(bedrooms, 0.6, 0.5, checkerboard," "); 
+	bedrooms = GG.xcut(bedrooms, 0.5, 0.5, checkerboard," "); 
 	underfamily = GG.xcut([underfamily],0.5,0.5,checkerboard," "); 
 	
 	// put everything together
@@ -350,10 +353,10 @@ var templatekitchen =
 		// concat(garage); 
 
 	// explode everything so we can inspect
-	//for (var i=0; i<segments.length; i++) { 
-	//	var b= segments[i].getBounds(); 
-	//	segments[i] = segments[i].translate([b[0].x,b[0].y,b[0].z]);
-	//}
+	for (var i=0; i<segments.length; i++) { 
+		var b= segments[i].getBounds(); 
+		segments[i] = segments[i].translate([b[0].x,b[0].y,b[0].z]);
+	}
 	
 	segments = GG.plate(segments, 130, 5); 
 	
